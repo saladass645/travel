@@ -25,7 +25,8 @@ class TourDetailsScreen extends GetWidget<TourDetailsController> {
   final TextEditingController destinationController = TextEditingController();
   final TextEditingController startDateController = TextEditingController();
   final TextEditingController endDateController = TextEditingController();
-  void openTripBox(BuildContext context, {int? editId, String? title}) {
+  void openTripBox(BuildContext context,
+      {int? editId, String? title, bool readonly = false}) {
     // If editId is provided, populate fields for editing
     if (editId != null) {
       Trip editTrip =
@@ -34,6 +35,8 @@ class TourDetailsScreen extends GetWidget<TourDetailsController> {
       destinationController.text = editTrip.destination!;
       startDateController.text = editTrip.startDate!;
       endDateController.text = editTrip.endDate!;
+    } else if (title != null || title != "") {
+      tripNameController.text = title!;
     }
 
     showDialog(
@@ -48,6 +51,7 @@ class TourDetailsScreen extends GetWidget<TourDetailsController> {
                 controller: tripNameController,
                 hintText: 'Trip Name',
                 hint: 'Trip Name',
+                enabled: readonly,
                 readOnly: false,
               ),
               SizedBox(height: 10),
@@ -315,7 +319,7 @@ class TourDetailsScreen extends GetWidget<TourDetailsController> {
                                 child: CustomButton(
                                   text: "Plan your trip".tr,
                                   onPressed: () {
-                                    openTripBox(context);
+                                    openTripBox(context, title: model.title);
                                   },
                                   radius: 70,
                                 ),

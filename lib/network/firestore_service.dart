@@ -20,6 +20,10 @@ class FirestoreServic {
     return await _db.collection("users").doc(uId).get();
   }
 
+  Future<QuerySnapshot<Map<String, dynamic>>> getUserPlan(String uId) async {
+    return await _db.collection("users").doc(uId).collection("plans").get();
+  }
+
   Future<DocumentSnapshot<Map<String, dynamic>>> getContinents() async {
     String lang = CatchStorage.get(k_langKey) ?? "en";
     return await _db.collection(lang).doc("continents").get();

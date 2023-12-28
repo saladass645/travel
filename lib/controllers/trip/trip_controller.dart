@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:travel_app/models/trip_details.dart';
 import 'package:travel_app/models/trip_model.dart';
+import 'package:travel_app/network/firestore_service.dart';
 
 class TripController extends GetxController {
   RxList<Trip> tripList = <Trip>[].obs;
@@ -57,7 +60,9 @@ class TripController extends GetxController {
     resetTripData();
     update();
   }
+// var userData = await FirestoreServic.instance.getUser(userCredential.user!.uid);
 
+//       var convertDataToJson = jsonEncode(userData.data());
   void editTrip(int id) {
     // Implement logic to edit an existing trip
     Trip existingTrip = tripList.firstWhere((trip) => trip.id == id);
