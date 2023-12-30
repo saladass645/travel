@@ -8,7 +8,7 @@ import 'package:travel_app/models/trip_model.dart';
 import 'package:travel_app/views/compass/trip_details.dart';
 //import 'package:travel_app/views/home/search_option_screen.dart';
 
-class CompassScreen extends StatelessWidget {
+class CompassScreen extends GetWidget<TripController> {
   final TripController tripController = TripController();
   final TextEditingController tripNameController = TextEditingController();
   final TextEditingController destinationController = TextEditingController();

@@ -32,4 +32,13 @@ class Trip {
       this.details = TripDetails.fromJson(data["details"]);
     }
   }
+
+  Map<String, dynamic> get toMap {
+    return {
+      "title": this.name,
+      "destination": this.destination,
+      "dateStart": this.startDate,
+      "dateEnd": this.endDate,
+    };
+  }
 }

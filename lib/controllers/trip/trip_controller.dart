@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:travel_app/models/trip_details.dart';
@@ -20,6 +22,18 @@ class TripController extends GetxController {
   RxInt numberOfPeople = 0.obs;
   RxString extraNotes = ''.obs;
 
+  onInit() async {
+    super.onInit();
+    print("HALLO");
+
+    update();
+
+    await getTripPlan();
+
+    // isLoading = false;
+    update();
+  }
+
   // Controllers for trip details
   final TextEditingController travelMethodController = TextEditingController();
   final TextEditingController accommodationController = TextEditingController();
@@ -39,7 +53,9 @@ class TripController extends GetxController {
   void setTripStartDate(String value) => tripStartDate.value = value;
   void setTripEndDate(String value) => tripEndDate.value = value;
 
-  void addTrip() {
+  Future<void> addTrip() async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+
     Trip newTrip = Trip(
       id: DateTime.now().millisecondsSinceEpoch,
       name: tripName.value,
@@ -55,14 +71,49 @@ class TripController extends GetxController {
       ),
     );
 
+    print("laaa ${tripName.value}");
+    var value = await FirestoreServic.instance.addNewPlan(newTrip);
+
     tripList.add(newTrip);
 
     resetTripData();
     update();
   }
-// var userData = await FirestoreServic.instance.getUser(userCredential.user!.uid);
 
-//       var convertDataToJson = jsonEncode(userData.data());
+  Future<void> getTripPlan() async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+
+    var value = await FirestoreServic.instance.getUserPlan(uid);
+
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> newValue = value.docs;
+
+    print("testsss: ${newValue.length}");
+
+    for (var document in newValue) {
+      String documentId = document.id;
+      Map<String, dynamic> data = document.data();
+
+      // Access the fields of the document
+      String destination = data['destination'];
+      String title = data['title'];
+      String dateStart = data['dateStart'];
+      String dateEnd = data['dateEnd'];
+
+      Trip newTrip = Trip(
+        destination: destination,
+        name: title,
+        startDate: dateStart,
+        endDate: dateEnd,
+      );
+
+      tripList.add(newTrip);
+    }
+
+    print("testsss1: ${tripList.length}");
+
+    update();
+  }
+
   void editTrip(int id) {
     // Implement logic to edit an existing trip
     Trip existingTrip = tripList.firstWhere((trip) => trip.id == id);

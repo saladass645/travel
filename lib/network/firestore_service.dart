@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:travel_app/helpers/catch_storage.dart';
 import 'package:travel_app/helpers/constants.dart';
 import 'package:travel_app/models/card_model.dart';
+import 'package:travel_app/models/trip_model.dart';
 import 'package:travel_app/models/user_model.dart';
 
 class FirestoreServic {
@@ -22,6 +23,14 @@ class FirestoreServic {
 
   Future<QuerySnapshot<Map<String, dynamic>>> getUserPlan(String uId) async {
     return await _db.collection("users").doc(uId).collection("plans").get();
+  }
+
+  Future<DocumentReference<Map<String, dynamic>>> addNewPlan(Trip model) async {
+    return await _db
+        .collection("users")
+        .doc(_auth.currentUser!.uid)
+        .collection("plans")
+        .add(model.toMap);
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> getContinents() async {
