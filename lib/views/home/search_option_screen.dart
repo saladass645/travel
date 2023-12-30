@@ -10,7 +10,6 @@ import 'package:travel_app/components/custom_text.dart';
 import 'package:travel_app/controllers/home/search_option_controller.dart';
 import 'package:travel_app/controllers/home/search_results_controller.dart';
 import 'package:travel_app/helpers/constants.dart';
-import 'package:travel_app/helpers/enum_helper.dart';
 import 'package:travel_app/views/home/search_results_screen.dart';
 
 class SearchOptionScreen extends GetWidget<SearchOptionController> {
@@ -141,89 +140,6 @@ class SearchOptionScreen extends GetWidget<SearchOptionController> {
                       ),
                     ),
                   ],
-                ),
-                SizedBox(height: 30),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _BuildItem(
-                        title: " " + "adults".tr,
-                        count: controller.adult,
-                        decreaseFunction: () =>
-                            controller.decrease(CounterType.adult),
-                        increaseFunction: () =>
-                            controller.increase(CounterType.adult),
-                      ),
-                    ),
-                    SizedBox(width: 30),
-                    Expanded(
-                      child: _BuildItem(
-                        title: " " + "room".tr,
-                        count: controller.room,
-                        decreaseFunction: () =>
-                            controller.decrease(CounterType.room),
-                        increaseFunction: () =>
-                            controller.increase(CounterType.room),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 30),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _BuildItem(
-                        title: " " + "infants".tr,
-                        count: controller.infants,
-                        decreaseFunction: () =>
-                            controller.decrease(CounterType.infants),
-                        increaseFunction: () =>
-                            controller.increase(CounterType.infants),
-                      ),
-                    ),
-                    SizedBox(width: 30),
-                    Expanded(
-                      child: _BuildItem(
-                        title: " " + "children".tr,
-                        count: controller.children,
-                        decreaseFunction: () =>
-                            controller.decrease(CounterType.children),
-                        increaseFunction: () =>
-                            controller.increase(CounterType.children),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 30),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 30),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 15),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(
-                        color: k_fieldGray,
-                        width: 1.5,
-                      ),
-                    ),
-                    child: DropdownButton<String>(
-                      value: controller.economyValue,
-                      isExpanded: true,
-                      borderRadius: BorderRadius.circular(20),
-                      underline: Container(),
-                      items: controller.economyItems
-                          .map(
-                            (e) => DropdownMenuItem(
-                              child: CustomText(
-                                text: e,
-                              ),
-                              value: e,
-                            ),
-                          )
-                          .toList(),
-                      onChanged: controller.onChanged,
-                    ),
-                  ),
                 ),
                 SizedBox(height: 20),
                 CustomButton(

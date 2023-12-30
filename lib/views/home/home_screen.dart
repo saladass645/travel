@@ -186,12 +186,12 @@ class HomeScreen extends GetWidget<HomeController> {
                           },
                         ),
                       ),
-                      SizedBox(height: 20),
-                      CustomText(
-                        text: "Popular_Categories".tr,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 17,
-                      ),
+                      // SizedBox(height: 20),
+                      // CustomText(
+                      //   text: "Popular_Categories".tr,
+                      //   fontWeight: FontWeight.bold,
+                      //   fontSize: 17,
+                      // ),
                       SizedBox(height: 20),
                       Container(
                         height: 100,
