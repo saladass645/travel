@@ -1,212 +1,193 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:line_icons/line_icons.dart';
-import 'package:travel_app/components/custom_field.dart';
 import 'package:travel_app/controllers/trip/trip_controller.dart';
-//import 'package:travel_app/helpers/constants.dart';
-import 'package:travel_app/models/trip_model.dart';
-import 'package:travel_app/views/compass/trip_details.dart';
-//import 'package:travel_app/views/home/search_option_screen.dart';
 
-class CompassScreen extends StatelessWidget {
-  final TripController tripController = TripController();
-  final TextEditingController tripNameController = TextEditingController();
-  final TextEditingController destinationController = TextEditingController();
-  final TextEditingController startDateController = TextEditingController();
-  final TextEditingController endDateController = TextEditingController();
+class CompassScreen extends StatefulWidget {
+  @override
+  _CompassScreenState createState() => _CompassScreenState();
+}
 
-  CompassScreen({Key? key}) : super(key: key);
-
-  void openTripBox(BuildContext context, {int? editId}) {
-    // If editId is provided, populate fields for editing
-    if (editId != null) {
-      Trip editTrip =
-          tripController.tripList.firstWhere((trip) => trip.id == editId);
-      tripNameController.text = editTrip.name!;
-      destinationController.text = editTrip.destination!;
-      startDateController.text = editTrip.startDate!;
-      endDateController.text = editTrip.endDate!;
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Enter Trip Information'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(height: 10),
-              CustomField(
-                controller: tripNameController,
-                hintText: 'Trip Name',
-                hint: 'Trip Name',
-                readOnly: false,
-              ),
-              SizedBox(height: 10),
-              CustomField(
-                controller: destinationController,
-                hintText: 'Destination',
-                hint: 'Destination',
-                readOnly: false,
-              ),
-              SizedBox(height: 10),
-              CustomField(
-                controller: startDateController,
-                hintText: 'Start Date',
-                readOnly: true,
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(2101),
-                  );
-                  if (pickedDate != null) {
-                    startDateController.text =
-                        "${pickedDate.toLocal().toLocal()}".split(' ')[0];
-                  }
-                },
-                hint: 'Start Date',
-              ),
-              SizedBox(height: 10),
-              CustomField(
-                controller: endDateController,
-                hintText: 'End Date',
-                readOnly: true,
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(2101),
-                  );
-                  if (pickedDate != null) {
-                    endDateController.text =
-                        "${pickedDate.toLocal().toLocal()}".split(' ')[0];
-                  }
-                },
-                hint: 'End Date',
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              // Handle saving the trip information
-              if (editId != null) {
-                // Editing existing trip
-                tripController.editTrip(editId);
-              } else {
-                // Adding new trip
-                tripController.addTrip();
-              }
-
-              tripNameController.clear();
-              destinationController.clear();
-              startDateController.clear();
-              endDateController.clear();
-
-              Navigator.pop(context); // Close the dialog
-            },
-            child: Text(editId != null ? "Save" : "Add"),
-          )
-        ],
-      ),
-    );
-  }
-
-  void viewTripDetails(BuildContext context, Trip trip) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TripDetailsScreen(trip: trip),
-      ),
-    );
-  }
+class _CompassScreenState extends State<CompassScreen> {
+  final TripController tripController = Get.find<TripController>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Plan Your Trip'),
+        title: Text('Trip List'),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 15),
-            Obx(
-              () => Column(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: GetBuilder<TripController>(
+          builder: (tripController) {
+            return SingleChildScrollView(
+              child: Column(
                 children: tripController.tripList.map((trip) {
-                  return GestureDetector(
-                    onTap: () {
-                      viewTripDetails(context, trip);
-                    },
-                    child: Card(
-                      elevation: 5,
-                      margin:
-                          EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  return Card(
+                    elevation: 5,
+                    margin: EdgeInsets.symmetric(
+                      vertical: 10,
+                      horizontal: 15,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: ListTile(
+                      title: Text(
+                        'Trip Name: ${trip.name}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
                       ),
-                      child: ListTile(
-                        title: Text(
-                          'Trip Name: ${trip.name}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Destination: ${trip.destination}',
+                              style: TextStyle(fontSize: 14)),
+                          Text('Start Date: ${trip.startDate}',
+                              style: TextStyle(fontSize: 14)),
+                          Text('End Date: ${trip.endDate}',
+                              style: TextStyle(fontSize: 14)),
+                        ],
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(
+                          Icons.delete,
+                          color: Colors.red,
                         ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Destination: ${trip.destination}',
-                                style: TextStyle(fontSize: 14)),
-                            Text('Start Date: ${trip.startDate}',
-                                style: TextStyle(fontSize: 14)),
-                            Text('End Date: ${trip.endDate}',
-                                style: TextStyle(fontSize: 14)),
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.edit,
-                                color: Colors.blue,
-                              ),
-                              onPressed: () {
-                                openTripBox(context, editId: trip.id);
-                              },
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                Icons.delete,
-                                color: Colors.red,
-                              ),
-                              onPressed: () {
-                                tripController.deleteTrip(trip.id!);
-                              },
-                            ),
-                          ],
-                        ),
+                        onPressed: () {
+                          print(trip.name);
+                          tripController.deleteTrip(trip.id!);
+                        },
                       ),
                     ),
                   );
                 }).toList(),
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          openTripBox(context);
+          // Open the dialog to add a new trip
+          showDialog(
+            context: context,
+            builder: (context) => AddTripDialog(),
+          );
         },
-        child: const Icon(LineIcons.plus),
+        child: Icon(Icons.add),
       ),
+    );
+  }
+}
+
+class AddTripDialog extends StatefulWidget {
+  @override
+  _AddTripDialogState createState() => _AddTripDialogState();
+}
+
+class _AddTripDialogState extends State<AddTripDialog> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController destinationController = TextEditingController();
+  final TextEditingController startDateController = TextEditingController();
+  final TextEditingController endDateController = TextEditingController();
+
+  final TripController tripController = Get.find<TripController>();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Add New Trip'),
+      contentPadding: EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: nameController,
+            decoration: InputDecoration(labelText: 'Trip Name'),
+          ),
+          SizedBox(height: 5),
+          TextField(
+            controller: destinationController,
+            decoration: InputDecoration(labelText: 'Destination'),
+          ),
+          SizedBox(height: 5),
+          TextField(
+            controller: startDateController,
+            decoration: InputDecoration(labelText: 'Start Date'),
+            onTap: () async {
+              DateTime? pickedDate = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime.now(),
+                lastDate: DateTime(2101),
+              );
+              if (pickedDate != null) {
+                startDateController.text =
+                    "${pickedDate.toLocal().toLocal()}".split(' ')[0];
+              }
+            },
+          ),
+          SizedBox(height: 5),
+          TextField(
+            controller: endDateController,
+            decoration: InputDecoration(labelText: 'End Date'),
+            onTap: () async {
+              DateTime? pickedDate = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime.now(),
+                lastDate: DateTime(2101),
+              );
+              if (pickedDate != null) {
+                endDateController.text =
+                    "${pickedDate.toLocal().toLocal()}".split(' ')[0];
+              }
+            },
+          ),
+        ],
+      ),
+      actions: [
+        ElevatedButton(
+          onPressed: () {
+            // Validate input before adding the trip
+            if (nameController.text.isNotEmpty &&
+                destinationController.text.isNotEmpty &&
+                startDateController.text.isNotEmpty &&
+                endDateController.text.isNotEmpty) {
+              tripController.setTripName(nameController.text);
+              tripController.setTripDestination(destinationController.text);
+              tripController.setTripStartDate(startDateController.text);
+              tripController.setTripEndDate(endDateController.text);
+
+              // Call the method to add the trip
+              tripController.addTrip();
+
+              // Clear text fields after adding the trip
+              nameController.clear();
+              destinationController.clear();
+              startDateController.clear();
+              endDateController.clear();
+
+              // Close the dialog
+              Navigator.pop(context);
+            } else {
+              // Show an error message or handle invalid input
+              // For simplicity, you can show a SnackBar with an error message
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Please fill in all fields.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          child: Text('Add Trip'),
+        ),
+      ],
     );
   }
 }

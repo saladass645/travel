@@ -13,6 +13,7 @@ import 'package:travel_app/controllers/profile/currency_converter_controller.dar
 import 'package:travel_app/controllers/profile/edit_account_controller.dart';
 import 'package:travel_app/controllers/profile/profile_controller.dart';
 import 'package:travel_app/controllers/splash_controller.dart';
+import 'package:travel_app/controllers/trip/trip_controller.dart';
 
 class Binding extends Bindings {
   @override
@@ -22,6 +23,7 @@ class Binding extends Bindings {
     Get.lazyPut(() => LoginController(), fenix: true);
     Get.lazyPut(() => RestPasswordController(), fenix: true);
     Get.lazyPut(() => HomeController(), fenix: true);
+    Get.lazyPut(() => TripController(), fenix: true);
     Get.lazyPut(() => SearchOptionController(), fenix: true);
     Get.lazyPut(() => TourDetailsController(), fenix: true);
     Get.lazyPut(() => SearchResultsController(), fenix: true);
