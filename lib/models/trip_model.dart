@@ -1,7 +1,7 @@
 import 'package:travel_app/models/trip_details.dart';
 
 class Trip {
-  int? id;
+  String? id;
   String? name;
   String? destination;
   String? startDate;
@@ -18,7 +18,7 @@ class Trip {
   });
 
   Trip.fromJson(Map<String, dynamic> data) {
-    this.id = data["id"] ?? 0;
+    this.id = data["id"] ?? "";
     this.name = data["tripName"] ?? "tripName";
     this.destination = data["destination"] ?? "destination";
     this.startDate = data["startDate"] ?? "";

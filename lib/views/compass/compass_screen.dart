@@ -20,48 +20,51 @@ class _CompassScreenState extends State<CompassScreen> {
         padding: const EdgeInsets.all(16.0),
         child: GetBuilder<TripController>(
           builder: (tripController) {
-            return Column(
-              children: tripController.tripList.map((trip) {
-                return Card(
-                  elevation: 5,
-                  margin: EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 15,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: ListTile(
-                    title: Text(
-                      'Trip Name: ${trip.name}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
+            return SingleChildScrollView(
+              child: Column(
+                children: tripController.tripList.map((trip) {
+                  return Card(
+                    elevation: 5,
+                    margin: EdgeInsets.symmetric(
+                      vertical: 10,
+                      horizontal: 15,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: ListTile(
+                      title: Text(
+                        'Trip Name: ${trip.name}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Destination: ${trip.destination}',
+                              style: TextStyle(fontSize: 14)),
+                          Text('Start Date: ${trip.startDate}',
+                              style: TextStyle(fontSize: 14)),
+                          Text('End Date: ${trip.endDate}',
+                              style: TextStyle(fontSize: 14)),
+                        ],
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(
+                          Icons.delete,
+                          color: Colors.red,
+                        ),
+                        onPressed: () {
+                          print(trip.name);
+                          tripController.deleteTrip(trip.id!);
+                        },
                       ),
                     ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Destination: ${trip.destination}',
-                            style: TextStyle(fontSize: 14)),
-                        Text('Start Date: ${trip.startDate}',
-                            style: TextStyle(fontSize: 14)),
-                        Text('End Date: ${trip.endDate}',
-                            style: TextStyle(fontSize: 14)),
-                      ],
-                    ),
-                    trailing: IconButton(
-                      icon: Icon(
-                        Icons.delete,
-                        color: Colors.red,
-                      ),
-                      onPressed: () {
-                        tripController.deleteTrip(trip.id ?? 0);
-                      },
-                    ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             );
           },
         ),

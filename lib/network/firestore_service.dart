@@ -21,6 +21,26 @@ class FirestoreServic {
     return await _db.collection("users").doc(uId).get();
   }
 
+  Future<QuerySnapshot<Map<String, dynamic>>?> deletePlan(
+      String uId, String tripId) async {
+    try {
+      QuerySnapshot<Map<String, dynamic>> docs = await _db
+          .collection("users")
+          .doc(uId)
+          .collection("plans")
+          .where("id", isEqualTo: tripId)
+          .get();
+      for (QueryDocumentSnapshot doc in docs.docs) {
+        await doc.reference.delete();
+        print("successful");
+      }
+      return docs;
+    } catch (e) {
+      print("error removing plans $e");
+      return null;
+    }
+  }
+
   Future<QuerySnapshot<Map<String, dynamic>>> getUserPlan(String uId) async {
     return await _db.collection("users").doc(uId).collection("plans").get();
   }

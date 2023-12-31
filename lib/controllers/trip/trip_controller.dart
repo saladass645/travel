@@ -1,5 +1,7 @@
 //import 'dart:convert';
 //import 'package:collection/collection.dart';
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -57,9 +59,10 @@ class TripController extends GetxController {
 
   Future<void> addTrip() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
-
+    Random random = Random();
+    int randomNumber = 10000000 + random.nextInt(90000000);
     Trip newTrip = Trip(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: randomNumber.toString(),
       name: name.value,
       destination: destination.value,
       startDate: startDate.value,
@@ -151,12 +154,14 @@ class TripController extends GetxController {
     update(); // This ensures that GetBuilder is triggered to rebuild the UI
   }
 
-  void deleteTrip(int id) {
-    tripList.removeWhere((trip) => trip.id == id);
+  Future<void> deleteTrip(String tripId) async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+    var value = await FirestoreServic.instance.deletePlan(uid, tripId);
+    tripList.removeWhere((trip) => trip.id == tripId);
     update();
   }
 
-  void saveDetails(int tripId) {
+  void saveDetails(String tripId) {
     // Convert relevant properties to double or int
     double budgetValue = double.tryParse(budgetController.text) ?? 0.0;
     int numberOfPeopleValue = int.tryParse(numberOfPeopleController.text) ?? 0;
@@ -200,7 +205,7 @@ class TripController extends GetxController {
     extraNotesController.clear();
   }
 
-  void saveTripDetails(int tripId, TripDetails details) {
+  void saveTripDetails(String tripId, TripDetails details) {
     // Find the trip in the list
     Trip? tripToUpdate = tripList.firstWhereOrNull((trip) => trip.id == tripId);
 
