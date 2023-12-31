@@ -23,4 +23,6 @@ class TripDetails {
       extraNotes: json['extraNotes'],
     );
   }
+
+  String? toMap() {}
 }

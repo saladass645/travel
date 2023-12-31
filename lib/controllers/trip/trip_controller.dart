@@ -1,19 +1,20 @@
 //import 'dart:convert';
-
+//import 'package:collection/collection.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:travel_app/models/trip_details.dart';
 import 'package:travel_app/models/trip_model.dart';
-//import 'package:travel_app/network/firestore_service.dart';
+//import 'package:travel_app/models/user_model.dart';
+import 'package:travel_app/network/firestore_service.dart';
 
 class TripController extends GetxController {
-  RxList<Trip> tripList = <Trip>[].obs;
-  RxString tripName = ''.obs;
-  RxString tripDestination = ''.obs;
-  RxString tripStartDate = ''.obs;
-  RxString tripEndDate = ''.obs;
+  final RxList<Trip> tripList = <Trip>[].obs;
+  RxString name = ''.obs;
+  RxString destination = ''.obs;
+  RxString startDate = ''.obs;
+  RxString endDate = ''.obs;
 
   // New attributes for trip details
   RxString travelMethod = ''.obs;
@@ -48,20 +49,20 @@ class TripController extends GetxController {
   void setNumberOfPeople(int value) => numberOfPeople.value = value;
   void setExtraNotes(String value) => extraNotes.value = value;
 
-  void setTripName(String value) => tripName.value = value;
-  void setTripDestination(String value) => tripDestination.value = value;
-  void setTripStartDate(String value) => tripStartDate.value = value;
-  void setTripEndDate(String value) => tripEndDate.value = value;
+  void setTripName(String value) => name.value = value;
+  void setTripDestination(String value) => destination.value = value;
+  void setTripStartDate(String value) => startDate.value = value;
+  void setTripEndDate(String value) => endDate.value = value;
 
   Future<void> addTrip() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
     Trip newTrip = Trip(
       id: DateTime.now().millisecondsSinceEpoch,
-      name: tripName.value,
-      destination: tripDestination.value,
-      startDate: tripStartDate.value,
-      endDate: tripEndDate.value,
+      name: name.value,
+      destination: destination.value,
+      startDate: startDate.value,
+      endDate: endDate.value,
       details: TripDetails(
         travelMethod: travelMethod.value,
         accommodation: accommodation.value,
@@ -71,63 +72,79 @@ class TripController extends GetxController {
       ),
     );
 
-    print("laaa ${tripName.value}");
-    var value = await FirestoreServic.instance.addNewPlan(newTrip);
+    print("Adding Trip: $newTrip");
 
-    tripList.add(newTrip);
+    try {
+      DocumentReference<Map<String, dynamic>> docRef =
+          await FirestoreServic.instance.addNewPlan(newTrip);
+      newTrip.id = docRef.id as int?;
 
-    resetTripData();
-    update();
+      // Update the trip list and trigger UI update
+      tripList.add(newTrip);
+      resetTripData();
+      update();
+    } catch (e) {
+      print("Error adding trip: $e");
+    }
   }
 
   Future<void> getTripPlan() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    var value = await FirestoreServic.instance.getUserPlan(uid);
+    try {
+      var value = await FirestoreServic.instance.getUserPlan(uid);
 
-    List<QueryDocumentSnapshot<Map<String, dynamic>>> newValue = value.docs;
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> newValue = value.docs;
 
-    print("testsss: ${newValue.length}");
+      print("Retrieved Trip Plans: ${newValue.length}");
 
-    for (var document in newValue) {
-      String documentId = document.id;
-      Map<String, dynamic> data = document.data();
+      for (var document in newValue) {
+        String documentId = document.id;
+        Map<String, dynamic> data = document.data();
 
-      // Access the fields of the document
-      String destination = data['destination'];
-      String title = data['title'];
-      String dateStart = data['dateStart'];
-      String dateEnd = data['dateEnd'];
+        String destination = data['destination'];
+        String? name = data['tripName'];
+        String? dateStart = data['startDate'];
+        String? dateEnd = data['endDate'];
 
-      Trip newTrip = Trip(
-        destination: destination,
-        name: title,
-        startDate: dateStart,
-        endDate: dateEnd,
-      );
+        Trip newTrip = Trip(
+          destination: destination,
+          name: name,
+          startDate: dateStart,
+          endDate: dateEnd,
+        );
 
-      tripList.add(newTrip);
+        tripList.add(newTrip);
+      }
+
+      print("Total Trip Plans: ${tripList.length}");
+
+      update();
+    } catch (e) {
+      print("Error getting trip plans: $e");
     }
-
-    print("testsss1: ${tripList.length}");
-
-    update();
   }
 
   void editTrip(int id) {
-    // Implement logic to edit an existing trip
-    Trip existingTrip = tripList.firstWhere((trip) => trip.id == id);
-    existingTrip.name = tripName.value;
-    existingTrip.destination = tripDestination.value;
-    existingTrip.startDate = tripStartDate.value;
-    existingTrip.endDate = tripEndDate.value;
-    existingTrip.details = TripDetails(
-      travelMethod: travelMethod.value,
-      accommodation: accommodation.value,
-      budget: budget.value,
-      numberOfPeople: numberOfPeople.value,
-      extraNotes: extraNotes.value,
-    );
+    // Check if there is a trip with the specified id
+    if (tripList.any((trip) => trip.id == id)) {
+      // Implement logic to edit an existing trip
+      Trip existingTrip = tripList.firstWhere((trip) => trip.id == id);
+      existingTrip.name = name.value;
+      existingTrip.destination = destination.value;
+      existingTrip.startDate = startDate.value;
+      existingTrip.endDate = endDate.value;
+      existingTrip.details = TripDetails(
+        travelMethod: travelMethod.value,
+        accommodation: accommodation.value,
+        budget: budget.value,
+        numberOfPeople: numberOfPeople.value,
+        extraNotes: extraNotes.value,
+      );
+    } else {
+      // Handle the case where there is no trip with the specified id
+      print('Trip with id $id not found.');
+    }
 
     resetTripData();
     update(); // This ensures that GetBuilder is triggered to rebuild the UI
@@ -136,14 +153,6 @@ class TripController extends GetxController {
   void deleteTrip(int id) {
     tripList.removeWhere((trip) => trip.id == id);
     update();
-  }
-
-  void toggleFavorite(int id) {
-    Trip toggledTrip = tripList.firstWhere((trip) => trip.id == id);
-    if (toggledTrip.favorite != null) {
-      toggledTrip.favorite = !(toggledTrip.favorite ?? false);
-      update();
-    }
   }
 
   void saveDetails(int tripId) {
@@ -172,10 +181,10 @@ class TripController extends GetxController {
   }
 
   void resetTripData() {
-    tripName.value = '';
-    tripDestination.value = '';
-    tripStartDate.value = '';
-    tripEndDate.value = '';
+    name.value = '';
+    destination.value = '';
+    startDate.value = '';
+    endDate.value = '';
     travelMethod.value = '';
     accommodation.value = '';
     budget.value = 0.0;
@@ -197,7 +206,9 @@ class TripController extends GetxController {
     if (tripToUpdate != null) {
       // Update the details of the found trip
       tripToUpdate.details = details;
-      update(); // Trigger a rebuild to reflect the changes in the UI
+
+      // Trigger a rebuild to reflect the changes in the UI
+      update();
     }
   }
 }

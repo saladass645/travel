@@ -30,7 +30,7 @@ class FirestoreServic {
         .collection("users")
         .doc(_auth.currentUser!.uid)
         .collection("plans")
-        .add(model.toMap);
+        .add(model.toMap());
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> getContinents() async {
