@@ -103,7 +103,6 @@ class TripController extends GetxController {
       print("Retrieved Trip Plans: ${newValue.length}");
 
       for (var document in newValue) {
-        String documentId = document.id;
         Map<String, dynamic> data = document.data();
 
         String destination = data['destination'];

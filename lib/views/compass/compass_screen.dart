@@ -100,6 +100,7 @@ class _AddTripDialogState extends State<AddTripDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('Add New Trip'),
+      contentPadding: EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -108,12 +109,12 @@ class _AddTripDialogState extends State<AddTripDialog> {
             controller: nameController,
             decoration: InputDecoration(labelText: 'Trip Name'),
           ),
-          SizedBox(height: 16),
+          SizedBox(height: 5),
           TextField(
             controller: destinationController,
             decoration: InputDecoration(labelText: 'Destination'),
           ),
-          SizedBox(height: 16),
+          SizedBox(height: 5),
           TextField(
             controller: startDateController,
             decoration: InputDecoration(labelText: 'Start Date'),
@@ -130,7 +131,7 @@ class _AddTripDialogState extends State<AddTripDialog> {
               }
             },
           ),
-          SizedBox(height: 16),
+          SizedBox(height: 5),
           TextField(
             controller: endDateController,
             decoration: InputDecoration(labelText: 'End Date'),
