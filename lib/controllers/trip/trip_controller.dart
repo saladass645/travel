@@ -23,6 +23,7 @@ class TripController extends GetxController {
   RxInt numberOfPeople = 0.obs;
   RxString extraNotes = ''.obs;
 
+  @override
   onInit() async {
     super.onInit();
     print("HALLO");
@@ -77,7 +78,7 @@ class TripController extends GetxController {
     try {
       DocumentReference<Map<String, dynamic>> docRef =
           await FirestoreServic.instance.addNewPlan(newTrip);
-      newTrip.id = docRef.id as int?;
+      // newTrip.id = int.parse(docRef.id);
 
       // Update the trip list and trigger UI update
       tripList.add(newTrip);
