@@ -13,16 +13,23 @@ class TripDetails {
     this.extraNotes,
   });
 
-  // Add a named constructor for creating an instance from JSON
-  factory TripDetails.fromJson(Map<String, dynamic> json) {
-    return TripDetails(
-      travelMethod: json['travelMethod'],
-      accommodation: json['accommodation'],
-      budget: json['budget']?.toDouble(),
-      numberOfPeople: json['numberOfPeople'],
-      extraNotes: json['extraNotes'],
-    );
+  TripDetails.fromJson(Map<String, dynamic> data) {
+    this.travelMethod = data["travelMethod"];
+    this.accommodation = data["accommodation"];
+    this.budget = data["budget"]?.toDouble(); // Convert to double
+    this.numberOfPeople = data["numberOfPeople"]?.toInt(); // Convert to int
+    this.extraNotes = data["extraNotes"];
   }
 
-  String? toMap() {}
+  Map<String, dynamic> toMap() {
+    final map = {
+      "travelMethod": travelMethod,
+      "accommodation": accommodation,
+      "budget": budget,
+      "numberOfPeople": numberOfPeople,
+      "extraNotes": extraNotes,
+    };
+
+    return map;
+  }
 }

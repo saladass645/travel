@@ -364,8 +364,6 @@ class _AddTripDialogState extends State<AddTripDialog> {
     if (widget.title != null || widget.title != "") {
       nameController.text = widget.title!;
     }
-
-    // TODO: implement initState
     super.initState();
   }
 

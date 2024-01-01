@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:travel_app/controllers/trip/trip_controller.dart';
+import 'package:travel_app/views/compass/trip_details.dart';
 
 class CompassScreen extends StatefulWidget {
   @override
@@ -23,43 +24,54 @@ class _CompassScreenState extends State<CompassScreen> {
             return SingleChildScrollView(
               child: Column(
                 children: tripController.tripList.map((trip) {
-                  return Card(
-                    elevation: 5,
-                    margin: EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 15,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: ListTile(
-                      title: Text(
-                        'Trip Name: ${trip.name}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                  return GestureDetector(
+                    onTap: () {
+                      // Navigate to the trip details page when card is tapped
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TripDetailsScreen(trip: trip),
                         ),
+                      );
+                    },
+                    child: Card(
+                      elevation: 5,
+                      margin: EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 15,
                       ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Destination: ${trip.destination}',
-                              style: TextStyle(fontSize: 14)),
-                          Text('Start Date: ${trip.startDate}',
-                              style: TextStyle(fontSize: 14)),
-                          Text('End Date: ${trip.endDate}',
-                              style: TextStyle(fontSize: 14)),
-                        ],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      trailing: IconButton(
-                        icon: Icon(
-                          Icons.delete,
-                          color: Colors.red,
+                      child: ListTile(
+                        title: Text(
+                          'Trip Name: ${trip.name}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
                         ),
-                        onPressed: () {
-                          print(trip.name);
-                          tripController.deleteTrip(trip.id!);
-                        },
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Destination: ${trip.destination}',
+                                style: TextStyle(fontSize: 14)),
+                            Text('Start Date: ${trip.startDate}',
+                                style: TextStyle(fontSize: 14)),
+                            Text('End Date: ${trip.endDate}',
+                                style: TextStyle(fontSize: 14)),
+                          ],
+                        ),
+                        trailing: IconButton(
+                          icon: Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                          ),
+                          onPressed: () {
+                            print(trip.name);
+                            tripController.deleteTrip(trip.id!);
+                          },
+                        ),
                       ),
                     ),
                   );
