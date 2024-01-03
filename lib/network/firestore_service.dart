@@ -4,9 +4,9 @@ import 'package:travel_app/helpers/catch_storage.dart';
 import 'package:travel_app/helpers/constants.dart';
 import 'package:travel_app/models/card_model.dart';
 import 'package:travel_app/models/trip_details.dart';
+import 'package:travel_app/models/trip_list.dart';
 import 'package:travel_app/models/trip_model.dart';
 import 'package:travel_app/models/user_model.dart';
-//import 'package:travel_app/models/trip_details.dart';
 
 class FirestoreServic {
   FirestoreServic._();
@@ -64,14 +64,74 @@ class FirestoreServic {
         .add(tripMap);
   }
 
-  Future<void> addTripDetails(
-      String uid, String tripId, TripDetails details) async {
+  Future<DocumentSnapshot<Map<String, dynamic>>> getTripDetails(
+      String uid, String tripId) async {
     return await _db
         .collection("users")
         .doc(uid)
         .collection("plans")
         .doc(tripId)
-        .set({"details": details.toMap()}, SetOptions(merge: true));
+        .get();
+  }
+
+  Future<void> updateTripDetails(
+      String uid, String tripId, TripDetails details) async {
+    try {
+      await _db
+          .collection("users")
+          .doc(uid)
+          .collection("plans")
+          .doc(tripId)
+          .set({"details": details.toMap()}, SetOptions(merge: true));
+    } catch (e) {
+      print("Error updating trip details: $e");
+      throw e; // Propagate the error up to the caller if needed
+    }
+  }
+
+  Future<void> saveTripChecklist(
+      String uid, String tripId, TripChecklist checklist) async {
+    try {
+      await _db
+          .collection("users")
+          .doc(uid)
+          .collection("checklists")
+          .doc(tripId)
+          .set(checklist.toMap());
+    } catch (e) {
+      print("Error saving trip checklist: $e");
+      throw e; // Propagate the error up to the caller if needed
+    }
+  }
+
+  Future<QuerySnapshot<Map<String, dynamic>>> getTripChecklists(
+      String uid) async {
+    try {
+      return await _db
+          .collection("users")
+          .doc(uid)
+          .collection("checklists")
+          .get();
+    } catch (e) {
+      print("Error getting trip checklists: $e");
+      rethrow; // Propagate the error up to the caller if needed
+    }
+  }
+
+  Future<void> deleteTripChecklist(String tripId, String checklistId) async {
+    try {
+      await _db
+          .collection("users")
+          .doc(_auth.currentUser!.uid)
+          .collection("plans")
+          .doc(tripId)
+          .collection("checklists")
+          .doc(checklistId)
+          .delete();
+    } catch (e) {
+      print("Error deleting checklist item: $e");
+      throw e; // Propagate the error up to the caller if needed
+    }
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> getContinents() async {

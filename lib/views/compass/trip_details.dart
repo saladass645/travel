@@ -4,11 +4,28 @@ import 'package:travel_app/controllers/trip/trip_controller.dart';
 import 'package:travel_app/models/trip_details.dart';
 import 'package:travel_app/models/trip_model.dart';
 
-class TripDetailsScreen extends StatelessWidget {
+class TripDetailsScreen extends StatefulWidget {
   final Trip trip;
   final TripController tripController = Get.put(TripController());
 
   TripDetailsScreen({required this.trip});
+
+  @override
+  _TripDetailsScreenState createState() => _TripDetailsScreenState();
+}
+
+class _TripDetailsScreenState extends State<TripDetailsScreen> {
+  late Trip trip;
+  late TripController tripController;
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    trip = widget.trip;
+    tripController = widget.tripController;
+    tripController.getTripDetails(tripController.uid, trip.id!);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +77,7 @@ class TripDetailsScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 10),
               Obx(
                 () => tripController.tripList.isEmpty
                     ? Text('No trip details available.')
@@ -86,90 +103,119 @@ class TripDetailsScreen extends StatelessWidget {
                         }).toList(),
                       ),
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 10),
             ],
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _showBottomSheet(context);
+          _showForm(context);
         },
         child: Icon(Icons.edit),
       ),
     );
   }
 
-  void _showBottomSheet(BuildContext context) {
-    showModalBottomSheet(
+  void _showForm(BuildContext context) {
+    showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Container(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Enter Trip Details:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: tripController.travelMethodController,
-                decoration: InputDecoration(labelText: 'Travel Method'),
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: tripController.accommodationController,
-                decoration: InputDecoration(labelText: 'Accommodation'),
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: tripController.budgetController,
-                decoration: InputDecoration(labelText: 'Budget'),
-                keyboardType: TextInputType.number,
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: tripController.numberOfPeopleController,
-                decoration: InputDecoration(labelText: 'Number of People'),
-                keyboardType: TextInputType.number,
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: tripController.extraNotesController,
-                decoration: InputDecoration(labelText: 'Extra Notes'),
-              ),
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {
-                  // Save entered trip details
-                  var tripDetails = TripDetails(
-                    travelMethod: tripController.travelMethodController.text,
-                    accommodation: tripController.accommodationController.text,
-                    budget:
-                        double.tryParse(tripController.budgetController.text) ??
-                            0.0,
-                    numberOfPeople: int.tryParse(
-                            tripController.numberOfPeopleController.text) ??
-                        0,
-                    extraNotes: tripController.extraNotesController.text,
-                  );
-
-                  print("Saving Trip Details: $tripDetails");
-
-                  tripController.saveDetails(trip.id!, tripDetails);
-
-                  // Close the bottom sheet
-                  Navigator.of(context).pop();
-                },
-                child: Text('Save Details'),
-              ),
-            ],
+        return AlertDialog(
+          title: Text('Enter Trip Details:'),
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: tripController.travelMethodController,
+                  decoration: InputDecoration(labelText: 'Travel Method'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the travel method';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: tripController.accommodationController,
+                  decoration: InputDecoration(labelText: 'Accommodation'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the accommodation';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: tripController.budgetController,
+                  decoration: InputDecoration(labelText: 'Budget'),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the budget';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: tripController.numberOfPeopleController,
+                  decoration: InputDecoration(labelText: 'Number of People'),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the number of people';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: tripController.extraNotesController,
+                  decoration: InputDecoration(labelText: 'Extra Notes'),
+                ),
+              ],
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  _saveTripDetails();
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text('Save Details'),
+            ),
+          ],
         );
       },
     );
+  }
+
+  void _saveTripDetails() async {
+    try {
+      var tripDetails = TripDetails(
+        travelMethod: tripController.travelMethodController.text,
+        accommodation: tripController.accommodationController.text,
+        budget: double.tryParse(tripController.budgetController.text) ?? 0.0,
+        numberOfPeople:
+            int.tryParse(tripController.numberOfPeopleController.text) ?? 0,
+        extraNotes: tripController.extraNotesController.text,
+      );
+
+      print("Saving Trip Details: $tripDetails");
+
+      await tripController.updateTripDetails(trip.id!, tripDetails);
+    } catch (e) {
+      // Handle the error, show a snackbar, or log it
+      print("Error updating trip details: $e");
+    }
   }
 }

@@ -13,14 +13,29 @@ class TripDetails {
     this.extraNotes,
   });
 
-  TripDetails.fromJson(Map<String, dynamic> data) {
-    this.travelMethod = data["travelMethod"];
-    this.accommodation = data["accommodation"];
-    this.budget = data["budget"]?.toDouble(); // Convert to double
-    this.numberOfPeople = data["numberOfPeople"]?.toInt(); // Convert to int
-    this.extraNotes = data["extraNotes"];
+  // Named constructor to create TripDetails from a Map
+  TripDetails.fromMap(Map<String, dynamic>? detailsMap) {
+    if (detailsMap != null) {
+      travelMethod = detailsMap["travelMethod"];
+      accommodation = detailsMap["accommodation"];
+      budget = detailsMap["budget"]?.toDouble();
+      numberOfPeople = detailsMap["numberOfPeople"]?.toInt();
+      extraNotes = detailsMap["extraNotes"];
+    }
   }
 
+  // Override toString for better logging
+  @override
+  String toString() {
+    return 'TripDetails{'
+        'travelMethod: $travelMethod, '
+        'accommodation: $accommodation, '
+        'budget: $budget, '
+        'numberOfPeople: $numberOfPeople, '
+        'extraNotes: $extraNotes}';
+  }
+
+  // Convert TripDetails to a Map
   Map<String, dynamic> toMap() {
     final map = {
       "travelMethod": travelMethod,

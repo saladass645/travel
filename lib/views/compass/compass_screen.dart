@@ -15,7 +15,7 @@ class _CompassScreenState extends State<CompassScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Trip List'),
+        title: Text('Plan Your Trip'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -45,7 +45,7 @@ class _CompassScreenState extends State<CompassScreen> {
                       ),
                       child: ListTile(
                         title: Text(
-                          'Trip Name: ${trip.name}',
+                          '${trip.name}',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
