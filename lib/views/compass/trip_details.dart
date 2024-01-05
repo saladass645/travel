@@ -87,16 +87,16 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                           return ListTile(
                             leading: Icon(Icons
                                 .check_circle), // Placeholder icon for each trip detail
-                            title:
-                                Text('Travel Method: ${details.travelMethod}'),
+                            title: Text(
+                                'Travel Method: ${details.details?.travelMethod}'),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Accommodation: ${details.accommodation}'),
-                                Text('Budget: ${details.budget}'),
+                                Text('Accommodation: ${trip.accommodation}'),
+                                Text('Budget: ${trip.budget}'),
                                 Text(
-                                    'Number of People: ${details.numberOfPeople}'),
-                                Text('Extra Notes: ${details.extraNotes}'),
+                                    'Number of People: ${trip.numberOfPeople}'),
+                                Text('Extra Notes: ${trip.extraNotes}'),
                               ],
                             ),
                           );

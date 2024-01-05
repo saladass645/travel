@@ -233,12 +233,16 @@ class TripController extends GetxController {
   Future<void> addChecklist(String tripId, String item) async {
     try {
       TripChecklist checklist = TripChecklist(
-        tripId: tripId,
-        item: item,
         checklistItems: [],
       );
-      await FirestoreServic.instance.saveTripChecklist(uid, tripId, checklist);
+      List<String>? itemList;
+      itemList!.add(item);
       checklistList.add(checklist);
+      await FirestoreServic.instance.saveTripChecklist(
+        uid,
+        tripId,
+      );
+
       update();
     } catch (e) {
       print("Error adding checklist item: $e");
@@ -248,7 +252,7 @@ class TripController extends GetxController {
   Future<void> deleteChecklist(String tripId, String checklistId) async {
     try {
       await FirestoreServic.instance.deleteTripChecklist(tripId, checklistId);
-      checklistList.removeWhere((checklist) => checklist.tripId == checklistId);
+      checklistList.removeWhere((checklist) => checklist == checklistId);
       update();
     } catch (e) {
       print("Error deleting checklist item: $e");

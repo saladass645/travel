@@ -54,7 +54,6 @@ class FirestoreServic {
     // Merge details with other trip properties
     Map<String, dynamic> tripMap = {
       ...model.toMap(),
-      "details": detailsMap,
     };
 
     return await _db
@@ -77,11 +76,20 @@ class FirestoreServic {
   Future<void> updateTripDetails(
       String uid, String tripId, TripDetails details) async {
     try {
-      await _db
+      // Get the document reference based on the document ID and user ID
+      final documentReference = await _db
           .collection("users")
           .doc(uid)
           .collection("plans")
-          .doc(tripId)
+          .where("id", isEqualTo: tripId)
+          .get()
+          .then((querySnapshot) {
+        // Assuming there is only one document with the specified tripId
+        return querySnapshot.docs.first.reference;
+      });
+
+      // Use the document reference to set the data
+      await documentReference
           .set({"details": details.toMap()}, SetOptions(merge: true));
     } catch (e) {
       print("Error updating trip details: $e");
@@ -97,7 +105,7 @@ class FirestoreServic {
           .doc(uid)
           .collection("checklists")
           .doc(tripId)
-          .set(checklist.toMap());
+          .update(checklist.toMap());
     } catch (e) {
       print("Error saving trip checklist: $e");
       throw e; // Propagate the error up to the caller if needed
