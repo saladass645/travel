@@ -218,6 +218,8 @@ class TripController extends GetxController {
 
       List<QueryDocumentSnapshot<Map<String, dynamic>>> newValue = value.docs;
 
+      checklistList.clear(); // Clear existing list before populating
+
       for (var document in newValue) {
         Map<String, dynamic> data = document.data();
         TripChecklist checklist = TripChecklist.fromMap(data);
@@ -233,27 +235,27 @@ class TripController extends GetxController {
   Future<void> addChecklist(String tripId, String item) async {
     try {
       TripChecklist checklist = TripChecklist(
+        tripId: tripId,
+        item: item,
         checklistItems: [],
       );
-      List<String>? itemList;
-      itemList!.add(item);
+      await FirestoreServic.instance.saveTripChecklist(uid, tripId, checklist);
       checklistList.add(checklist);
-      await FirestoreServic.instance.saveTripChecklist(
-        uid,
-        tripId,
-      );
-
       update();
     } catch (e) {
       print("Error adding checklist item: $e");
     }
   }
 
-  Future<void> deleteChecklist(String tripId, String checklistId) async {
+  Future<void> deleteChecklist(String tripId, String checklistItemId) async {
     try {
-      await FirestoreServic.instance.deleteTripChecklist(tripId, checklistId);
-      checklistList.removeWhere((checklist) => checklist == checklistId);
+      print("Deleting checklist item with ID: $checklistItemId");
+      await FirestoreServic.instance
+          .deleteTripChecklistItem(uid, tripId, checklistItemId);
+      checklistList.removeWhere((checklist) =>
+          checklist.tripId == tripId && checklist.item == checklistItemId);
       update();
+      print("Checklist item deleted successfully");
     } catch (e) {
       print("Error deleting checklist item: $e");
     }

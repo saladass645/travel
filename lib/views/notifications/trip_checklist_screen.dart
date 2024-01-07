@@ -28,7 +28,7 @@ class TripChecklistScreen extends StatelessWidget {
 
             SizedBox(height: 16),
 
-            // Display and input trip checklist here using the TripController
+            // Input trip checklist
             TextField(
               controller: tripController.checklistItemController,
               decoration: InputDecoration(
@@ -37,11 +37,10 @@ class TripChecklistScreen extends StatelessWidget {
             ),
             SizedBox(height: 8),
             ElevatedButton(
-              onPressed: () {
-                tripController.addChecklist(
+              onPressed: () async {
+                await tripController.addChecklist(
                   trip.id!,
-                  tripController.checklistItemController
-                      .text, // Provide a default empty string if null
+                  tripController.checklistItemController.text,
                 );
                 tripController.checklistItemController.clear();
               },
@@ -61,7 +60,9 @@ class TripChecklistScreen extends StatelessWidget {
                       icon: Icon(Icons.delete),
                       onPressed: () {
                         tripController.deleteChecklist(
-                            trip.id!, checklist.tripId);
+                          trip.id!,
+                          checklist.tripId,
+                        );
                       },
                     ),
                   );

@@ -88,15 +88,16 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                             leading: Icon(Icons
                                 .check_circle), // Placeholder icon for each trip detail
                             title: Text(
-                                'Travel Method: ${details.details?.travelMethod}'),
+                                'Travel Method: ${trip.details?.travelMethod}'),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Accommodation: ${trip.accommodation}'),
-                                Text('Budget: ${trip.budget}'),
                                 Text(
-                                    'Number of People: ${trip.numberOfPeople}'),
-                                Text('Extra Notes: ${trip.extraNotes}'),
+                                    'Accommodation: ${trip.details?.accommodation}'),
+                                Text('Budget: ${trip.details?.budget}'),
+                                Text(
+                                    'Number of People: ${trip.details?.numberOfPeople}'),
+                                Text('Notes: ${trip.details?.extraNotes}'),
                               ],
                             ),
                           );

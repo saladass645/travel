@@ -49,6 +49,7 @@ class FirestoreServic {
 
   Future<DocumentReference<Map<String, dynamic>>> addNewPlan(Trip model) async {
     // Extract details from the trip model
+    // ignore: unused_local_variable
     Map<String, dynamic>? detailsMap = model.details?.toMap();
 
     // Merge details with other trip properties
@@ -103,12 +104,22 @@ class FirestoreServic {
       await _db
           .collection("users")
           .doc(uid)
-          .collection("checklists")
+          .collection("plans")
           .doc(tripId)
-          .update(checklist.toMap());
+          .set({
+        'tripId': checklist.tripId,
+        'checklistItems': FieldValue.arrayUnion([
+          {
+            'item': checklist.item,
+            'subItems': checklist.checklistItems
+                .map((subItem) => subItem.toMap())
+                .toList(),
+          },
+        ]),
+      }, SetOptions(merge: true));
     } catch (e) {
       print("Error saving trip checklist: $e");
-      throw e; // Propagate the error up to the caller if needed
+      throw e;
     }
   }
 
@@ -126,19 +137,24 @@ class FirestoreServic {
     }
   }
 
-  Future<void> deleteTripChecklist(String tripId, String checklistId) async {
+  Future<void> deleteTripChecklistItem(
+      String uid, String tripId, String checklistItemId) async {
     try {
       await _db
           .collection("users")
-          .doc(_auth.currentUser!.uid)
+          .doc(uid)
           .collection("plans")
           .doc(tripId)
-          .collection("checklists")
-          .doc(checklistId)
-          .delete();
+          .update({
+        'checklistItems': FieldValue.arrayRemove([
+          {
+            'item': checklistItemId,
+          },
+        ]),
+      });
     } catch (e) {
-      print("Error deleting checklist item: $e");
-      throw e; // Propagate the error up to the caller if needed
+      print("Error deleting trip checklist item: $e");
+      throw e;
     }
   }
 

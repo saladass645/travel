@@ -1,22 +1,31 @@
 class TripChecklist {
+  late String tripId;
+  late String item;
   List<TripChecklist> checklistItems = [];
 
-  // Updated constructor to include the 'item' parameter
-  TripChecklist({required this.checklistItems});
+  TripChecklist({
+    required this.tripId,
+    required this.item,
+    required this.checklistItems,
+  });
 
   Map<String, dynamic> toMap() {
     return {
-      'checklistItems': checklistItems.map((item) => item.toMap()).toList(),
+      'item': item,
+      'checklistItems':
+          checklistItems.map((subItem) => subItem.toMap()).toList(),
     };
   }
 
   factory TripChecklist.fromMap(Map<String, dynamic> map) {
     return TripChecklist(
-      checklistItems: List<TripChecklist>.from(
-        (map['checklistItems'] as List<dynamic>).map(
-          (item) => TripChecklist.fromMap(item),
-        ),
-      ),
+      tripId: map['tripId'],
+      item: map['item'],
+      checklistItems: (map['checklistItems'] as List<dynamic>? ?? [])
+          .map<TripChecklist>(
+            (subItem) => TripChecklist.fromMap(subItem),
+          )
+          .toList(),
     );
   }
 }
