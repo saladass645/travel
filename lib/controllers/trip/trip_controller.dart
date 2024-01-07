@@ -1,5 +1,5 @@
-//import 'dart:convert';
-//import 'package:collection/collection.dart';
+// ignore_for_file: unused_local_variable
+
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,44 +7,43 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:travel_app/models/trip_details.dart';
+import 'package:travel_app/models/trip_list.dart';
 import 'package:travel_app/models/trip_model.dart';
-//import 'package:travel_app/models/user_model.dart';
 import 'package:travel_app/network/firestore_service.dart';
 
 class TripController extends GetxController {
   final RxList<Trip> tripList = <Trip>[].obs;
+  final RxList<TripChecklist> checklistList = <TripChecklist>[].obs;
+  final RxList<Map<dynamic, dynamic>> checklistName =
+      <Map<dynamic, dynamic>>[].obs;
+
   RxString name = ''.obs;
   RxString destination = ''.obs;
   RxString startDate = ''.obs;
   RxString endDate = ''.obs;
-
-  // New attributes for trip details
   RxString travelMethod = ''.obs;
   RxString accommodation = ''.obs;
   RxDouble budget = 0.0.obs;
   RxInt numberOfPeople = 0.obs;
   RxString extraNotes = ''.obs;
+  String get uid => FirebaseAuth.instance.currentUser?.uid ?? '';
 
   @override
   onInit() async {
     super.onInit();
-    print("HALLO");
-
     update();
-
     await getTripPlan();
-
-    // isLoading = false;
+    await getChecklists();
     update();
   }
 
-  // Controllers for trip details
   final TextEditingController travelMethodController = TextEditingController();
   final TextEditingController accommodationController = TextEditingController();
   final TextEditingController budgetController = TextEditingController();
   final TextEditingController numberOfPeopleController =
       TextEditingController();
   final TextEditingController extraNotesController = TextEditingController();
+  final TextEditingController checklistItemController = TextEditingController();
 
   void setTravelMethod(String value) => travelMethod.value = value;
   void setAccommodation(String value) => accommodation.value = value;
@@ -67,13 +66,6 @@ class TripController extends GetxController {
       destination: destination.value,
       startDate: startDate.value,
       endDate: endDate.value,
-      details: TripDetails(
-        travelMethod: travelMethod.value,
-        accommodation: accommodation.value,
-        budget: budget.value,
-        numberOfPeople: numberOfPeople.value,
-        extraNotes: extraNotes.value,
-      ),
     );
 
     print("Adding Trip: $newTrip");
@@ -81,15 +73,20 @@ class TripController extends GetxController {
     try {
       DocumentReference<Map<String, dynamic>> docRef =
           await FirestoreServic.instance.addNewPlan(newTrip);
-      // newTrip.id = int.parse(docRef.id);
-
-      // Update the trip list and trigger UI update
+      // Save details to Firestore
+      await saveTripDetailsToFirestore(docRef.id, TripDetails());
       tripList.add(newTrip);
       resetTripData();
       update();
     } catch (e) {
       print("Error adding trip: $e");
     }
+  }
+
+  Future<void> saveTripDetailsToFirestore(
+      String tripId, TripDetails details) async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+    await FirestoreServic.instance.getTripDetails(uid, tripId);
   }
 
   Future<void> getTripPlan() async {
@@ -100,8 +97,6 @@ class TripController extends GetxController {
 
       List<QueryDocumentSnapshot<Map<String, dynamic>>> newValue = value.docs;
 
-      print("Retrieved Trip Plans: ${newValue.length}");
-
       for (var document in newValue) {
         Map<String, dynamic> data = document.data();
 
@@ -110,17 +105,21 @@ class TripController extends GetxController {
         String? dateStart = data['startDate'];
         String? dateEnd = data['endDate'];
 
+        // Access details directly from the main document
+        Map<String, dynamic>? detailsMap = data['details'];
+        TripDetails details = TripDetails.fromMap(detailsMap);
+
         Trip newTrip = Trip(
+          id: document.id,
           destination: destination,
           name: name,
           startDate: dateStart,
           endDate: dateEnd,
+          details: details,
         );
 
         tripList.add(newTrip);
       }
-
-      print("Total Trip Plans: ${tripList.length}");
 
       update();
     } catch (e) {
@@ -128,29 +127,71 @@ class TripController extends GetxController {
     }
   }
 
-  void editTrip(int id) {
-    // Check if there is a trip with the specified id
-    if (tripList.any((trip) => trip.id == id)) {
-      // Implement logic to edit an existing trip
-      Trip existingTrip = tripList.firstWhere((trip) => trip.id == id);
-      existingTrip.name = name.value;
-      existingTrip.destination = destination.value;
-      existingTrip.startDate = startDate.value;
-      existingTrip.endDate = endDate.value;
-      existingTrip.details = TripDetails(
-        travelMethod: travelMethod.value,
-        accommodation: accommodation.value,
-        budget: budget.value,
-        numberOfPeople: numberOfPeople.value,
-        extraNotes: extraNotes.value,
-      );
-    } else {
-      // Handle the case where there is no trip with the specified id
-      print('Trip with id $id not found.');
-    }
+  Future<void> getTripDetails(String uid, String tripId) async {
+    try {
+      var snapshot = await FirestoreServic.instance.getTripDetails(uid, tripId);
 
-    resetTripData();
-    update(); // This ensures that GetBuilder is triggered to rebuild the UI
+      if (snapshot.exists) {
+        TripDetails details = TripDetails.fromMap(snapshot.data()!);
+        // Update the tripList with the fetched details
+        tripList.removeWhere((trip) => trip.id == tripId);
+        tripList.add(Trip(id: tripId, details: details));
+        loadDetails(details);
+      } else {
+        print("Trip details not found for $tripId");
+      }
+    } catch (e) {
+      print("Error getting trip details: $e");
+    }
+  }
+
+  void saveDetails(String tripId, TripDetails details) async {
+    try {
+      // Update trip details in Firestore
+      await FirestoreServic.instance.updateTripDetails(
+          FirebaseAuth.instance.currentUser!.uid, tripId, details);
+
+      travelMethodController.clear();
+      accommodationController.clear();
+      budgetController.clear();
+      numberOfPeopleController.clear();
+      extraNotesController.clear();
+    } catch (e) {
+      print("Error updating trip details: $e");
+    }
+  }
+
+  Future<void> updateTripDetails(String tripId, TripDetails details) async {
+    try {
+      // Update trip details in Firestore
+      await FirestoreServic.instance.updateTripDetails(
+          FirebaseAuth.instance.currentUser!.uid, tripId, details);
+
+      // Update local trip list
+      Trip? tripToUpdate =
+          tripList.firstWhereOrNull((trip) => trip.id == tripId);
+
+      if (tripToUpdate != null) {
+        tripToUpdate.details = details;
+        update();
+      }
+
+      travelMethodController.clear();
+      accommodationController.clear();
+      budgetController.clear();
+      numberOfPeopleController.clear();
+      extraNotesController.clear();
+    } catch (e) {
+      print("Error updating trip details: $e");
+    }
+  }
+
+  void loadDetails(TripDetails? details) {
+    travelMethodController.text = details?.travelMethod ?? '';
+    accommodationController.text = details?.accommodation ?? '';
+    budgetController.text = details?.budget?.toString() ?? '';
+    numberOfPeopleController.text = details?.numberOfPeople?.toString() ?? '';
+    extraNotesController.text = details?.extraNotes ?? '';
   }
 
   Future<void> deleteTrip(String tripId) async {
@@ -160,29 +201,72 @@ class TripController extends GetxController {
     update();
   }
 
-  void saveDetails(String tripId) {
-    // Convert relevant properties to double or int
-    double budgetValue = double.tryParse(budgetController.text) ?? 0.0;
-    int numberOfPeopleValue = int.tryParse(numberOfPeopleController.text) ?? 0;
+  Future<void> saveChecklist(String tripId, TripChecklist checklist) async {
+    try {
+      await FirestoreServic.instance.saveTripChecklist(uid, tripId, checklist);
+      checklistList.add(checklist);
+      update();
+    } catch (e) {
+      print("Error saving checklist: $e");
+    }
+  }
 
-    TripDetails details = TripDetails(
-      travelMethod: travelMethodController.text,
-      accommodation: accommodationController.text,
-      budget: budgetValue,
-      numberOfPeople: numberOfPeopleValue,
-      extraNotes: extraNotesController.text,
-    );
+  Future<void> getChecklists() async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    // Assuming you have a method in TripController to save details
-    // Make sure to handle null or add a default behavior if the details field is null
-    TripController().saveTripDetails(tripId, details);
+    try {
+      var value = await FirestoreServic.instance.getTripChecklists(uid);
 
-    // Clear controllers after saving
-    travelMethodController.clear();
-    accommodationController.clear();
-    budgetController.clear();
-    numberOfPeopleController.clear();
-    extraNotesController.clear();
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> newValue = value.docs;
+
+      checklistName.clear(); // Clear existing list before populating
+
+      for (var document in newValue) {
+        Map<String, dynamic> data = document.data();
+
+        for (var checklistItem in data["checklistItems"]) {
+          checklistName.add({
+            "item": checklistItem["item"],
+            "tripId": data["tripId"],
+          });
+        }
+      }
+
+      update();
+    } catch (e) {
+      print("Error getting checklists: $e");
+    }
+  }
+
+  Future<void> addChecklist(String tripId, String item) async {
+    try {
+      TripChecklist checklist = TripChecklist(
+        tripId: tripId,
+        item: item,
+        checklistItems: [],
+      );
+
+      await FirestoreServic.instance.saveTripChecklist(uid, tripId, checklist);
+      await getChecklists();
+      update();
+    } catch (e) {
+      print("Error adding checklist item: $e");
+    }
+  }
+
+  Future<void> deleteChecklist(String tripId, String checklistItemName) async {
+    try {
+      print("Deleting checklist item with ID: $checklistItemName");
+      await FirestoreServic.instance
+          .deleteTripChecklistItem(uid, tripId, checklistItemName);
+      checklistName.removeWhere((checklist) =>
+          checklist["tripId"] == tripId &&
+          checklist["item"] == checklistItemName);
+      update();
+      print("Checklist item deleted successfully");
+    } catch (e) {
+      print("Error deleting checklist item: $e");
+    }
   }
 
   void resetTripData() {
@@ -196,7 +280,6 @@ class TripController extends GetxController {
     numberOfPeople.value = 0;
     extraNotes.value = '';
 
-    // Clear controllers for trip details
     travelMethodController.clear();
     accommodationController.clear();
     budgetController.clear();
@@ -205,14 +288,10 @@ class TripController extends GetxController {
   }
 
   void saveTripDetails(String tripId, TripDetails details) {
-    // Find the trip in the list
     Trip? tripToUpdate = tripList.firstWhereOrNull((trip) => trip.id == tripId);
 
     if (tripToUpdate != null) {
-      // Update the details of the found trip
       tripToUpdate.details = details;
-
-      // Trigger a rebuild to reflect the changes in the UI
       update();
     }
   }

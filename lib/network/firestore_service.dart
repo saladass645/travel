@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:travel_app/helpers/catch_storage.dart';
 import 'package:travel_app/helpers/constants.dart';
 import 'package:travel_app/models/card_model.dart';
+import 'package:travel_app/models/trip_details.dart';
+import 'package:travel_app/models/trip_list.dart';
 import 'package:travel_app/models/trip_model.dart';
 import 'package:travel_app/models/user_model.dart';
 
@@ -46,11 +48,107 @@ class FirestoreServic {
   }
 
   Future<DocumentReference<Map<String, dynamic>>> addNewPlan(Trip model) async {
+    // Extract details from the trip model
+    // ignore: unused_local_variable
+    Map<String, dynamic>? detailsMap = model.details?.toMap();
+
+    // Merge details with other trip properties
+    Map<String, dynamic> tripMap = {
+      ...model.toMap(),
+    };
+
     return await _db
         .collection("users")
         .doc(_auth.currentUser!.uid)
         .collection("plans")
-        .add(model.toMap());
+        .add(tripMap);
+  }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> getTripDetails(
+      String uid, String tripId) async {
+    return await _db
+        .collection("users")
+        .doc(uid)
+        .collection("plans")
+        .doc(tripId)
+        .get();
+  }
+
+  Future<void> updateTripDetails(
+      String uid, String tripId, TripDetails details) async {
+    try {
+      // Get the document reference based on the document ID and user ID
+      final documentReference = await _db
+          .collection("users")
+          .doc(uid)
+          .collection("plans")
+          .where("id", isEqualTo: tripId)
+          .get()
+          .then((querySnapshot) {
+        // Assuming there is only one document with the specified tripId
+        return querySnapshot.docs.first.reference;
+      });
+
+      // Use the document reference to set the data
+      await documentReference
+          .set({"details": details.toMap()}, SetOptions(merge: true));
+    } catch (e) {
+      print("Error updating trip details: $e");
+      throw e; // Propagate the error up to the caller if needed
+    }
+  }
+
+  Future<void> saveTripChecklist(
+      String uid, String tripId, TripChecklist checklist) async {
+    try {
+      await _db
+          .collection("users")
+          .doc(uid)
+          .collection("plans")
+          .doc(tripId)
+          .set({
+        'tripId': checklist.tripId,
+        'checklistItems': FieldValue.arrayUnion([
+          {
+            'item': checklist.item,
+          },
+        ]),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      print("Error saving trip checklist: $e");
+      throw e;
+    }
+  }
+
+  Future<QuerySnapshot<Map<String, dynamic>>> getTripChecklists(
+      String uid) async {
+    try {
+      return await _db.collection("users").doc(uid).collection("plans").get();
+    } catch (e) {
+      print("Error getting trip checklists: $e");
+      rethrow; // Propagate the error up to the caller if needed
+    }
+  }
+
+  Future<void> deleteTripChecklistItem(
+      String uid, String tripId, String checklistItemName) async {
+    try {
+      await _db
+          .collection("users")
+          .doc(uid)
+          .collection("plans")
+          .doc(tripId)
+          .update({
+        'checklistItems': FieldValue.arrayRemove([
+          {
+            'item': checklistItemName,
+          },
+        ]),
+      });
+    } catch (e) {
+      print("Error deleting trip checklist item: $e");
+      throw e;
+    }
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> getContinents() async {

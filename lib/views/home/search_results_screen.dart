@@ -36,7 +36,7 @@ class SearchResultsScreen extends GetWidget<SearchResultsController> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: CustomText(
-          text: "Hotels".tr,
+          text: "Places".tr,
           fontWeight: FontWeight.bold,
           fontSize: 18,
         ),

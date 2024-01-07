@@ -6,7 +6,7 @@ import 'package:travel_app/controllers/layout/layout_controller.dart';
 import 'package:travel_app/helpers/constants.dart';
 import 'package:travel_app/views/compass/compass_screen.dart';
 import 'package:travel_app/views/home/home_screen.dart';
-//import 'package:travel_app/views/notifications/notification_screen.dart';
+import 'package:travel_app/views/notifications/notification_screen.dart';
 import 'package:travel_app/views/profile/profile_screen.dart';
 
 class LayoutScreen extends GetWidget<LayoutController> {
@@ -24,7 +24,7 @@ class LayoutScreen extends GetWidget<LayoutController> {
               children: [
                 HomeScreen(),
                 CompassScreen(),
-                //NotificationScreen(),
+                NotificationScreen(),
                 ProfileScreen(),
               ],
             );
@@ -48,10 +48,10 @@ class LayoutScreen extends GetWidget<LayoutController> {
                 icon: LineIcons.compass,
                 text: 'Plan'.tr,
               ),
-              // GButton(
-              //   icon: LineIcons.heart,
-              //   text: 'Favourite'.tr,
-              // ),
+              GButton(
+                icon: LineIcons.list,
+                text: 'Checklist'.tr,
+              ),
               GButton(
                 icon: LineIcons.user,
                 text: 'Profile'.tr,

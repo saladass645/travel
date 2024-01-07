@@ -6,7 +6,7 @@ class Trip {
   String? destination;
   String? startDate;
   String? endDate;
-  TripDetails? details;
+  TripDetails? details; // Include the details property in Trip
 
   Trip({
     this.id,
@@ -14,7 +14,7 @@ class Trip {
     this.destination,
     this.startDate,
     this.endDate,
-    this.details,
+    this.details, // Initialize details property in the constructor
   });
 
   Trip.fromJson(Map<String, dynamic> data) {
@@ -23,10 +23,17 @@ class Trip {
     this.destination = data["destination"] ?? "destination";
     this.startDate = data["startDate"] ?? "";
     this.endDate = data["endDate"] ?? "";
-    if (data.containsKey("details")) {
-      this.details = TripDetails.fromJson(data["details"]);
-    }
   }
+
+  get accommodation => null;
+
+  get travelMethod => null;
+
+  get budget => null;
+
+  get numberOfPeople => null;
+
+  get extraNotes => null;
 
   Map<String, dynamic> toMap() {
     final map = {
@@ -35,11 +42,8 @@ class Trip {
       "destination": destination,
       "startDate": startDate,
       "endDate": endDate,
+      "details": details?.toMap(), // Convert details to Map
     };
-
-    if (details != null) {
-      map["details"] = details!.toMap();
-    }
 
     return map;
   }
