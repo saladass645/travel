@@ -14,6 +14,8 @@ import 'package:travel_app/network/firestore_service.dart';
 class TripController extends GetxController {
   final RxList<Trip> tripList = <Trip>[].obs;
   final RxList<TripChecklist> checklistList = <TripChecklist>[].obs;
+  final RxList<Map<dynamic, dynamic>> checklistName =
+      <Map<dynamic, dynamic>>[].obs;
 
   RxString name = ''.obs;
   RxString destination = ''.obs;
@@ -30,7 +32,6 @@ class TripController extends GetxController {
   onInit() async {
     super.onInit();
     update();
-
     await getTripPlan();
     await getChecklists();
     update();
@@ -218,12 +219,17 @@ class TripController extends GetxController {
 
       List<QueryDocumentSnapshot<Map<String, dynamic>>> newValue = value.docs;
 
-      checklistList.clear(); // Clear existing list before populating
+      checklistName.clear(); // Clear existing list before populating
 
       for (var document in newValue) {
         Map<String, dynamic> data = document.data();
-        TripChecklist checklist = TripChecklist.fromMap(data);
-        checklistList.add(checklist);
+
+        for (var checklistItem in data["checklistItems"]) {
+          checklistName.add({
+            "item": checklistItem["item"],
+            "tripId": data["tripId"],
+          });
+        }
       }
 
       update();
@@ -239,21 +245,23 @@ class TripController extends GetxController {
         item: item,
         checklistItems: [],
       );
+
       await FirestoreServic.instance.saveTripChecklist(uid, tripId, checklist);
-      checklistList.add(checklist);
+      await getChecklists();
       update();
     } catch (e) {
       print("Error adding checklist item: $e");
     }
   }
 
-  Future<void> deleteChecklist(String tripId, String checklistItemId) async {
+  Future<void> deleteChecklist(String tripId, String checklistItemName) async {
     try {
-      print("Deleting checklist item with ID: $checklistItemId");
+      print("Deleting checklist item with ID: $checklistItemName");
       await FirestoreServic.instance
-          .deleteTripChecklistItem(uid, tripId, checklistItemId);
-      checklistList.removeWhere((checklist) =>
-          checklist.tripId == tripId && checklist.item == checklistItemId);
+          .deleteTripChecklistItem(uid, tripId, checklistItemName);
+      checklistName.removeWhere((checklist) =>
+          checklist["tripId"] == tripId &&
+          checklist["item"] == checklistItemName);
       update();
       print("Checklist item deleted successfully");
     } catch (e) {

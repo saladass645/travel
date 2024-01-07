@@ -111,9 +111,6 @@ class FirestoreServic {
         'checklistItems': FieldValue.arrayUnion([
           {
             'item': checklist.item,
-            'subItems': checklist.checklistItems
-                .map((subItem) => subItem.toMap())
-                .toList(),
           },
         ]),
       }, SetOptions(merge: true));
@@ -126,11 +123,7 @@ class FirestoreServic {
   Future<QuerySnapshot<Map<String, dynamic>>> getTripChecklists(
       String uid) async {
     try {
-      return await _db
-          .collection("users")
-          .doc(uid)
-          .collection("checklists")
-          .get();
+      return await _db.collection("users").doc(uid).collection("plans").get();
     } catch (e) {
       print("Error getting trip checklists: $e");
       rethrow; // Propagate the error up to the caller if needed
@@ -138,7 +131,7 @@ class FirestoreServic {
   }
 
   Future<void> deleteTripChecklistItem(
-      String uid, String tripId, String checklistItemId) async {
+      String uid, String tripId, String checklistItemName) async {
     try {
       await _db
           .collection("users")
@@ -148,7 +141,7 @@ class FirestoreServic {
           .update({
         'checklistItems': FieldValue.arrayRemove([
           {
-            'item': checklistItemId,
+            'item': checklistItemName,
           },
         ]),
       });
