@@ -48,6 +48,7 @@ class TripChecklistScreen extends StatelessWidget {
                 child: Text('Add Checklist Item'),
               ),
 
+              SizedBox(height: 0),
               SizedBox(height: 16),
 
               // Display checklist items
