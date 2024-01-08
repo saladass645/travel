@@ -67,8 +67,8 @@ class CurrencyConverterScreen extends GetWidget<CurrencyConverterController> {
                         height: 19,
                       ),
                       _BuildItem(
-                        imagePath: "assets/images/EUR.png",
-                        text: "EUR".tr,
+                        imagePath: "assets/images/MYR.png",
+                        text: "MYR".tr,
                       ),
                     ],
                   ),
@@ -92,9 +92,9 @@ class CurrencyConverterScreen extends GetWidget<CurrencyConverterController> {
                                   " " +
                                   "USD".tr +
                                   " = " +
-                                  "${controller.currencyModel!.conversionRates!.eUR!.toStringAsFixed(3)}" +
+                                  "${controller.currencyModel!.conversionRates!.mYR!.toStringAsFixed(3)}" +
                                   " " +
-                                  "EUR".tr,
+                                  "MYR".tr,
                               fontSize: 30,
                               color: Colors.white,
                             ),
@@ -127,10 +127,10 @@ class CurrencyConverterScreen extends GetWidget<CurrencyConverterController> {
                             readOnly: false,
                           ),
                         ),
-                        SizedBox(width: 30),
+                        SizedBox(width: 1),
                         Expanded(
                           child: CustomButton(
-                            text: "Convert".tr,
+                            text: "Go".tr,
                             onPressed: () {
                               controller.convertAmount();
                             },
@@ -142,12 +142,12 @@ class CurrencyConverterScreen extends GetWidget<CurrencyConverterController> {
                   SizedBox(height: 20),
                   Row(
                     children: [
-                      CustomText(text: "The result :".tr),
+                      CustomText(text: "Converted :".tr),
                       SizedBox(width: 10),
                       CustomText(
                           text: "${controller.result.toStringAsFixed(2)}" +
                               " " +
-                              "EUR".tr),
+                              "MYR".tr),
                     ],
                   )
                 ],

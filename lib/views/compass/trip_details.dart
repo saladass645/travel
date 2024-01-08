@@ -79,31 +79,68 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
               ),
               SizedBox(height: 10),
               Obx(
-                () => tripController.tripList.isEmpty
-                    ? Text('No trip details available.')
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: tripController.tripList.map((details) {
-                          return ListTile(
-                            leading: Icon(Icons
-                                .check_circle), // Placeholder icon for each trip detail
-                            title: Text(
-                                'Travel Method: ${trip.details?.travelMethod}'),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                    'Accommodation: ${trip.details?.accommodation}'),
-                                Text('Budget: ${trip.details?.budget}'),
-                                Text(
-                                    'Number of People: ${trip.details?.numberOfPeople}'),
-                                Text('Notes: ${trip.details?.extraNotes}'),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      ),
+                () {
+                  List<Trip> detailsForCurrentTrip = tripController.tripList
+                      .where((details) => details.id == trip.id)
+                      .toList();
+
+                  return detailsForCurrentTrip.isEmpty
+                      ? Text('No trip details available for the current trip.')
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: detailsForCurrentTrip.map((details) {
+                            return ListTile(
+                                leading: Icon(Icons.check_circle),
+                                title: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.directions_car),
+                                          SizedBox(width: 8),
+                                          Text(
+                                              'Travel Method: ${trip.details?.travelMethod}'),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.hotel),
+                                          SizedBox(width: 8),
+                                          Text(
+                                              'Accommodation: ${trip.details?.accommodation}'),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.attach_money),
+                                          SizedBox(width: 8),
+                                          Text(
+                                              'Budget: ${trip.details?.budget}'),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.people),
+                                          SizedBox(width: 8),
+                                          Text(
+                                              'Number of People: ${trip.details?.numberOfPeople}'),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.notes),
+                                          SizedBox(width: 8),
+                                          Text(
+                                              'Notes: ${trip.details?.extraNotes}'),
+                                        ],
+                                      ),
+                                    ]));
+                          }).toList(),
+                        );
+                },
               ),
+
               SizedBox(height: 10),
             ],
           ),
@@ -118,6 +155,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
+// Inside _showForm method
   void _showForm(BuildContext context) {
     showDialog(
       context: context,
@@ -129,9 +167,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextFormField(
+                _buildTextFormField(
                   controller: tripController.travelMethodController,
-                  decoration: InputDecoration(labelText: 'Travel Method'),
+                  labelText: 'Travel Method',
+                  icon: Icons.directions_car,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter the travel method';
@@ -139,9 +178,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                     return null;
                   },
                 ),
-                TextFormField(
+                _buildTextFormField(
                   controller: tripController.accommodationController,
-                  decoration: InputDecoration(labelText: 'Accommodation'),
+                  labelText: 'Accommodation',
+                  icon: Icons.hotel,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter the accommodation';
@@ -149,10 +189,11 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                     return null;
                   },
                 ),
-                TextFormField(
+                _buildTextFormField(
                   controller: tripController.budgetController,
-                  decoration: InputDecoration(labelText: 'Budget'),
+                  labelText: 'Budget',
                   keyboardType: TextInputType.number,
+                  icon: Icons.attach_money,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter the budget';
@@ -160,10 +201,11 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                     return null;
                   },
                 ),
-                TextFormField(
+                _buildTextFormField(
                   controller: tripController.numberOfPeopleController,
-                  decoration: InputDecoration(labelText: 'Number of People'),
+                  labelText: 'Number of People',
                   keyboardType: TextInputType.number,
+                  icon: Icons.people,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter the number of people';
@@ -171,9 +213,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                     return null;
                   },
                 ),
-                TextFormField(
+                _buildTextFormField(
                   controller: tripController.extraNotesController,
-                  decoration: InputDecoration(labelText: 'Extra Notes'),
+                  labelText: 'Notes',
+                  icon: Icons.notes,
                 ),
               ],
             ),
@@ -197,6 +240,31 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildTextFormField({
+    required TextEditingController controller,
+    required String labelText,
+    IconData? icon,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    return Row(
+      children: [
+        Icon(icon),
+        SizedBox(width: 8),
+        Expanded(
+          child: TextFormField(
+            controller: controller,
+            decoration: InputDecoration(
+              labelText: labelText,
+            ),
+            keyboardType: keyboardType,
+            validator: validator,
+          ),
+        ),
+      ],
     );
   }
 

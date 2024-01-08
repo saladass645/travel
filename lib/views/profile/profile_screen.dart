@@ -6,6 +6,7 @@ import 'package:travel_app/components/custom_text.dart';
 import 'package:travel_app/controllers/profile/profile_controller.dart';
 import 'package:travel_app/helpers/constants.dart';
 import 'package:travel_app/helpers/main_user.dart';
+import 'package:travel_app/views/profile/currency_converter_screen.dart';
 // import 'package:travel_app/views/profile/add_card_screen.dart';
 // import 'package:travel_app/views/profile/change_language_screen.dart';
 // import 'package:travel_app/views/profile/currency_converter_screen.dart';
@@ -46,14 +47,14 @@ class ProfileScreen extends GetWidget<ProfileController> {
                 );
               },
             ),
-            SizedBox(height: 30),
+            SizedBox(height: 25),
             _BuildItem(
               title: "Edit account".tr,
               leadingIcon: Icons.settings,
               sufixIcon: Icons.arrow_forward_ios,
               onTap: () => Get.to(() => EditAccountScreen()),
             ),
-            SizedBox(height: 25),
+            // SizedBox(height: 25),
             // _BuildItem(
             //   title: "Add a new card".tr,
             //   leadingIcon: Icons.add,
@@ -83,20 +84,20 @@ class ProfileScreen extends GetWidget<ProfileController> {
             //   sufixIcon: Icons.arrow_forward_ios,
             //   onTap: () {},
             // ),
-            // SizedBox(height: 25),
-            // _BuildItem(
-            //   title: "Currency Converter".tr,
-            //   leadingIcon: Icons.currency_bitcoin,
-            //   sufixIcon: Icons.arrow_forward_ios,
-            //   onTap: () {
-            //     Get.to(() => CurrencyConverterScreen());
-            //   },
-            // ),
-            // SizedBox(height: 25),
+            SizedBox(height: 25),
+            _BuildItem(
+              title: "Currency Converter".tr,
+              leadingIcon: Icons.currency_bitcoin,
+              sufixIcon: Icons.arrow_forward_ios,
+              onTap: () {
+                Get.to(() => CurrencyConverterScreen());
+              },
+            ),
+            SizedBox(height: 25),
             _BuildItem(
               title: "Logout".tr,
               leadingIcon: Icons.logout,
-              // sufixIcon: Icons.arrow_forward_ios,
+              sufixIcon: Icons.arrow_forward_ios,
               onTap: () {
                 controller.logut();
               },

@@ -34,7 +34,9 @@ class BuildSearchItem extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 CustomText(text: model.title!, fontWeight: FontWeight.w600),
-                CustomText(text: "\$${model.startedPrice}", fontWeight: FontWeight.w600),
+                CustomText(
+                    text: "\RM${model.startedPrice}",
+                    fontWeight: FontWeight.w600),
               ],
             ),
           ),
@@ -48,28 +50,28 @@ class BuildSearchItem extends StatelessWidget {
                     width: 65,
                     height: 25,
                     padding: EdgeInsets.symmetric(horizontal: 10),
-                    decoration: BoxDecoration(
-                      color: k_primaryColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    // decoration: BoxDecoration(
+                    //   color: k_primaryColor,
+                    //   borderRadius: BorderRadius.circular(8),
+                    // ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(Icons.star, color: Colors.white, size: 20),
-                        CustomText(
-                          text: "${model.rating}",
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
+                        // Icon(Icons.star, color: Colors.white, size: 20),
+                        // CustomText(
+                        //   text: "${model.rating}",
+                        //   color: Colors.white,
+                        //   fontSize: 16,
+                        // ),
                       ],
                     ),
                   ),
                   SizedBox(width: 8),
-                  CustomText(
-                    text: "(${model.numberOfReviews} ${("reviews").tr})",
-                    color: k_fontGray,
-                    fontSize: 14,
-                  ),
+                  // CustomText(
+                  //   text: "(${model.numberOfReviews} ${("reviews").tr})",
+                  //   color: k_fontGray,
+                  //   fontSize: 14,
+                  // ),
                 ],
               ),
               CustomText(

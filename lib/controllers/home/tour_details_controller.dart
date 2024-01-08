@@ -8,7 +8,7 @@ class TourDetailsController extends GetxController {
   List<String> viewDetail = [
     "Overview".tr,
     "Details".tr,
-    "Reviews".tr,
+    // "Reviews".tr,
     "Costs".tr,
   ];
 

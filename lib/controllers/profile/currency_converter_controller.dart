@@ -55,7 +55,7 @@ class CurrencyConverterController extends GetxController {
       if (response.statusCode != 200) throw "Error with response";
 
       convertCurrency = CurrencyModel.fromJson(response.data);
-      result = currencyModel!.conversionRates!.eUR * double.parse(amount.text);
+      result = currencyModel!.conversionRates!.mYR * double.parse(amount.text);
       update();
     } catch (error) {
       print("in convertAmount function");

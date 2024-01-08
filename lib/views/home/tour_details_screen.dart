@@ -114,27 +114,27 @@ class TourDetailsScreen extends GetWidget<TourDetailsController> {
                                     fontWeight: FontWeight.bold,
                                     fontSize: 28,
                                   ),
-                                  CustomText(
-                                    text: "\$${model.startedPrice}",
-                                    fontWeight: FontWeight.bold,
-                                    color: k_primaryColor,
-                                    fontSize: 28,
-                                  )
+                                  // CustomText(
+                                  //   text: "\$${model.startedPrice}",
+                                  //   fontWeight: FontWeight.bold,
+                                  //   color: k_primaryColor,
+                                  //   fontSize: 28,
+                                  // )
                                 ],
                               ),
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Icon(
-                                    LineIcons.starAlt,
-                                    color: Color(0xFFFF9900),
-                                  ),
-                                  SizedBox(width: 5),
-                                  CustomText(
-                                    text:
-                                        "${model.rating} (${model.numberOfReviews}  ${'reviews'.tr})",
-                                    color: k_fontGray,
-                                  ),
+                                  // Icon(
+                                  //   LineIcons.starAlt,
+                                  //   color: Color(0xFFFF9900),
+                                  // ),
+                                  // SizedBox(width: 5),
+                                  // CustomText(
+                                  //   text:
+                                  //       "${model.rating} (${model.numberOfReviews}  ${'reviews'.tr})",
+                                  //   color: k_fontGray,
+                                  // ),
                                 ],
                               )
                             ],
@@ -188,27 +188,27 @@ class TourDetailsScreen extends GetWidget<TourDetailsController> {
 
                           Row(
                             children: [
-                              Expanded(
-                                flex: 12,
-                                child: Container(
-                                  height: 57,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(70),
-                                    border: Border.all(
-                                      color: k_primaryColor,
-                                    ),
-                                  ),
-                                  child: GestureDetector(
-                                    child: Center(
-                                      child: CustomText(
-                                        text: "\$${model.extraPrice}",
-                                        color: k_primaryColor,
-                                      ),
-                                    ),
-                                    onTap: () {},
-                                  ),
-                                ),
-                              ),
+                              // Expanded(
+                              //   flex: 12,
+                              //   child: Container(
+                              //     height: 57,
+                              //     decoration: BoxDecoration(
+                              //       borderRadius: BorderRadius.circular(70),
+                              //       border: Border.all(
+                              //         color: k_primaryColor,
+                              //       ),
+                              //     ),
+                              //     child: GestureDetector(
+                              //       child: Center(
+                              //         child: CustomText(
+                              //           text: "\$${model.extraPrice}",
+                              //           color: k_primaryColor,
+                              //         ),
+                              //       ),
+                              //       onTap: () {},
+                              //     ),
+                              //   ),
+                              // ),
                               SizedBox(width: 15),
                               Expanded(
                                 flex: 16,
@@ -267,11 +267,11 @@ class _buildDetails extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _BuildInfoItem(
-                    imagePath: "assets/images/duration.png",
-                    title: "${model.durationDay} " + "Days".tr,
-                    subTitle: "Duration".tr,
-                  ),
+                  // _BuildInfoItem(
+                  //   imagePath: "assets/images/duration.png",
+                  //   title: "${model.durationDay} " + "Days".tr,
+                  //   subTitle: "Duration".tr,
+                  // ),
                   _BuildInfoItem(
                     imagePath: "assets/images/Location.png",
                     title: "${model.distance} " + "KM".tr,

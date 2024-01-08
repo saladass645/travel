@@ -215,7 +215,7 @@ class TripController extends GetxController {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
     try {
-      var value = await FirestoreServic.instance.getTripChecklists(uid);
+      var value = await FirestoreServic.instance.getChecklists(uid);
 
       List<QueryDocumentSnapshot<Map<String, dynamic>>> newValue = value.docs;
 

@@ -106,27 +106,26 @@ class FirestoreServic {
           .doc(uid)
           .collection("plans")
           .doc(tripId)
-          .set({
+          .update({
         'tripId': checklist.tripId,
         'checklistItems': FieldValue.arrayUnion([
           {
             'item': checklist.item,
           },
         ]),
-      }, SetOptions(merge: true));
+      });
     } catch (e) {
       print("Error saving trip checklist: $e");
       throw e;
     }
   }
 
-  Future<QuerySnapshot<Map<String, dynamic>>> getTripChecklists(
-      String uid) async {
+  Future<QuerySnapshot<Map<String, dynamic>>> getChecklists(String uid) async {
     try {
       return await _db.collection("users").doc(uid).collection("plans").get();
     } catch (e) {
-      print("Error getting trip checklists: $e");
-      rethrow; // Propagate the error up to the caller if needed
+      print("Error getting checklists: $e");
+      throw e;
     }
   }
 

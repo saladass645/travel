@@ -164,15 +164,15 @@ class HomeScreen extends GetWidget<HomeController> {
                                                   color: Colors.white,
                                                   fontWeight: FontWeight.bold,
                                                 ),
-                                                CustomText(
-                                                  text: "Starting_at".tr +
-                                                      " " +
-                                                      controller.tours[index]
-                                                          .startedPrice!
-                                                          .toString(),
-                                                  color: Colors.white,
-                                                  fontSize: 15,
-                                                ),
+                                                // CustomText(
+                                                //   text: "Starting_at".tr +
+                                                //       " " +
+                                                //       controller.tours[index]
+                                                //           .startedPrice!
+                                                //           .toString(),
+                                                //   color: Colors.white,
+                                                //   fontSize: 15,
+                                                // ),
                                               ],
                                             )
                                           ],

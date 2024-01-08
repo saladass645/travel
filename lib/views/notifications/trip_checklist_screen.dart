@@ -45,7 +45,7 @@ class TripChecklistScreen extends StatelessWidget {
                   );
                   tripController.checklistItemController.clear();
                 },
-                child: Text('Add Checklist Item'),
+                child: Text('Add Item'),
               ),
 
               SizedBox(height: 16),
@@ -54,17 +54,23 @@ class TripChecklistScreen extends StatelessWidget {
               Obx(() {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: tripController.checklistName.map((checklist) {
-                    return ListTile(
-                      title: Text(checklist["item"]),
-                      trailing: IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () {
-                          tripController.deleteChecklist(
-                            trip.id!,
-                            checklist['item'],
-                          );
-                        },
+                  children: tripController.checklistName
+                      .where((checklist) => checklist["tripId"] == trip.id)
+                      .map((checklist) {
+                    return Card(
+                      elevation: 3,
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      child: ListTile(
+                        title: Text(checklist["item"]),
+                        trailing: IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () {
+                            tripController.deleteChecklist(
+                              trip.id!,
+                              checklist['item'],
+                            );
+                          },
+                        ),
                       ),
                     );
                   }).toList(),
