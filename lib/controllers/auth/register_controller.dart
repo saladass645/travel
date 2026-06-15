@@ -37,7 +37,7 @@ class RegisterController extends GetxController {
         dateOfRegister: DateFormat("y/M/d ,H:m:s").format(DateTime.now()),
       );
 
-      await FirestoreServic.instance.saveUser(_model);
+      await FirestoreService.instance.saveUser(_model);
 
       var convertDataToJson = jsonEncode(_model.toMap);
 

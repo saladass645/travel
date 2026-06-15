@@ -53,8 +53,8 @@ class SearchOptionController extends GetxController {
   }
 
   void desplay() {
-    print(dateController?.selectedRange!.startDate);
-    print(dateController?.selectedRange!.endDate);
+    debugPrint('${dateController?.selectedRange!.startDate}');
+    debugPrint('${dateController?.selectedRange!.endDate}');
   }
 
   void increase(CounterType type) {

@@ -117,9 +117,7 @@ class CurrencyConverterScreen extends GetWidget<CurrencyConverterController> {
                             validator: (String? value) {
                               if (value == null || value.isEmpty)
                                 return "Please enter an amount".tr;
-                              int? parseValue = int.tryParse(value.toString());
-                              print(parseValue);
-                              if (parseValue == null)
+                              if (double.tryParse(value) == null)
                                 return "Please enter a valid amount".tr;
                               return null;
                             },

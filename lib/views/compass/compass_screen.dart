@@ -68,7 +68,7 @@ class _CompassScreenState extends State<CompassScreen> {
                             color: Colors.red,
                           ),
                           onPressed: () {
-                            print(trip.name);
+                            debugPrint(trip.name);
                             tripController.deleteTrip(trip.id!);
                           },
                         ),

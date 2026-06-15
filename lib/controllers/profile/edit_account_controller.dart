@@ -72,7 +72,7 @@ class EditAccountController extends GetxController {
         image: imageUrl ?? model.image,
       );
 
-      await FirestoreServic.instance.updateUser(_model);
+      await FirestoreService.instance.updateUser(_model);
 
       await CatchStorage.save(k_userKey, jsonEncode(_model.toMap));
 

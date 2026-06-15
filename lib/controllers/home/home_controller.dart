@@ -26,23 +26,17 @@ class HomeController extends GetxController {
 
   Future<void> getContinents() async {
     continents = [];
-    var value = await FirestoreServic.instance.getContinents();
-    List<dynamic> newValue = value.data()?["names"];
-    print(newValue.length);
-    for (String n in newValue) {
+    final value = await FirestoreService.instance.getContinents();
+    final List<dynamic> newValue = value.data()?['names'] ?? const [];
+    for (final n in newValue.cast<String>()) {
       continents.add(n);
     }
     update();
-    // var SelectForm = value.data()!["names"] as Map<String, dynamic>;
-    // SelectForm.forEach((key, value) {
-    //   continents.add(value);
-    // });
-    // update();
   }
 
   Future<void> getPopularCategory() async {
     popularCategory = [];
-    var documents = await FirestoreServic.instance.getPopularCategories();
+    var documents = await FirestoreService.instance.getPopularCategories();
 
     if (documents.data() == null) return;
 
@@ -59,17 +53,16 @@ class HomeController extends GetxController {
 
   Future<void> getTours(int currentIndex) async {
     tours = [];
-    var querySnapshot = await FirestoreServic.instance.getTours();
+    final selected = continents[currentIndex].toLowerCase();
+    final showAll = selected == 'all';
+    final querySnapshot = await FirestoreService.instance.getTours();
 
-    querySnapshot.docs.forEach((element) {
-      TourModel tour = TourModel.fromJson(element.data());
-      // Add a filter based on the 'continent' field
-      if (tour.continent == continents[currentIndex]) {
-        tours.add(tour);
-      } else if (continents[currentIndex] == "All") {
+    for (final element in querySnapshot.docs) {
+      final tour = TourModel.fromJson(element.data());
+      if (showAll || (tour.continent?.toLowerCase() ?? '') == selected) {
         tours.add(tour);
       }
-    });
+    }
 
     update();
   }

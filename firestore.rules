@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Catalog data is published per-language (en/, ar/) and is read-only to clients.
+    match /{lang}/{document=**} {
+      allow read: if isSignedIn() && (lang == 'en' || lang == 'ar');
+      allow write: if false;
+    }
+
+    // Each user owns their profile, plans (with checklist), and cards.
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      match /plans/{planId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      match /cards/{cardId} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+  }
+}

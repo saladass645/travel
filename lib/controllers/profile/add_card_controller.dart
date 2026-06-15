@@ -71,7 +71,7 @@ class AddCardController extends GetxController {
         expirationDate: Timestamp.fromDate(expirationDate),
       );
 
-      await FirestoreServic.instance.addNewCard(_model);
+      await FirestoreService.instance.addNewCard(_model);
 
       Get.back();
 

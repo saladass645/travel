@@ -279,12 +279,12 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
         extraNotes: tripController.extraNotesController.text,
       );
 
-      print("Saving Trip Details: $tripDetails");
+      debugPrint("Saving Trip Details: $tripDetails");
 
       await tripController.updateTripDetails(trip.id!, tripDetails);
     } catch (e) {
       // Handle the error, show a snackbar, or log it
-      print("Error updating trip details: $e");
+      debugPrint("Error updating trip details: $e");
     }
   }
 }

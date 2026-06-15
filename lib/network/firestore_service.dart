@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:travel_app/helpers/catch_storage.dart';
 import 'package:travel_app/helpers/constants.dart';
 import 'package:travel_app/models/card_model.dart';
@@ -8,12 +9,20 @@ import 'package:travel_app/models/trip_list.dart';
 import 'package:travel_app/models/trip_model.dart';
 import 'package:travel_app/models/user_model.dart';
 
-class FirestoreServic {
-  FirestoreServic._();
-  static final instance = FirestoreServic._();
+class FirestoreService {
+  FirestoreService._();
+  static final instance = FirestoreService._();
 
   final _db = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
+
+  String get _currentUid {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) {
+      throw StateError('FirestoreService called without an authenticated user.');
+    }
+    return uid;
+  }
 
   Future<void> saveUser(UserModel model) async {
     await _db.collection("users").doc(model.uId).set(model.toMap);
@@ -34,11 +43,10 @@ class FirestoreServic {
           .get();
       for (QueryDocumentSnapshot doc in docs.docs) {
         await doc.reference.delete();
-        print("successful");
       }
       return docs;
     } catch (e) {
-      print("error removing plans $e");
+      debugPrint('error removing plans $e');
       return null;
     }
   }
@@ -59,7 +67,7 @@ class FirestoreServic {
 
     return await _db
         .collection("users")
-        .doc(_auth.currentUser!.uid)
+        .doc(_currentUid)
         .collection("plans")
         .add(tripMap);
   }
@@ -93,7 +101,7 @@ class FirestoreServic {
       await documentReference
           .set({"details": details.toMap()}, SetOptions(merge: true));
     } catch (e) {
-      print("Error updating trip details: $e");
+      debugPrint("Error updating trip details: $e");
       throw e; // Propagate the error up to the caller if needed
     }
   }
@@ -115,7 +123,7 @@ class FirestoreServic {
         ]),
       });
     } catch (e) {
-      print("Error saving trip checklist: $e");
+      debugPrint("Error saving trip checklist: $e");
       throw e;
     }
   }
@@ -124,7 +132,7 @@ class FirestoreServic {
     try {
       return await _db.collection("users").doc(uid).collection("plans").get();
     } catch (e) {
-      print("Error getting checklists: $e");
+      debugPrint("Error getting checklists: $e");
       throw e;
     }
   }
@@ -145,7 +153,7 @@ class FirestoreServic {
         ]),
       });
     } catch (e) {
-      print("Error deleting trip checklist item: $e");
+      debugPrint("Error deleting trip checklist item: $e");
       throw e;
     }
   }
@@ -169,7 +177,7 @@ class FirestoreServic {
       CardModel model) async {
     return await _db
         .collection("users")
-        .doc(_auth.currentUser!.uid)
+        .doc(_currentUid)
         .collection("cards")
         .add(model.toMap);
   }
@@ -177,7 +185,7 @@ class FirestoreServic {
   Future<void> updateUser(UserModel model) async {
     return await _db
         .collection("users")
-        .doc(_auth.currentUser!.uid)
+        .doc(_currentUid)
         .set(model.toMap);
   }
 }

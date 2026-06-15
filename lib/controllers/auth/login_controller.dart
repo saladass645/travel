@@ -24,7 +24,7 @@ class LoginController extends GetxController {
       UserCredential userCredential =
           await AuthService.instance.login(email: email.text, password: password.text);
 
-      var userData = await FirestoreServic.instance.getUser(userCredential.user!.uid);
+      var userData = await FirestoreService.instance.getUser(userCredential.user!.uid);
 
       var convertDataToJson = jsonEncode(userData.data());
 

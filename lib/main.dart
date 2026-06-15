@@ -1,5 +1,6 @@
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -11,15 +12,35 @@ import 'package:travel_app/multi_language/langeuages/translations.dart';
 import 'package:travel_app/helpers/catch_storage.dart';
 import 'package:travel_app/views/splash/splash_screen.dart';
 
+const String _kRecaptchaSiteKey =
+    String.fromEnvironment('RECAPTCHA_V3_SITE_KEY');
+
+Future<void> _activateAppCheck() async {
+  if (kIsWeb) {
+    if (_kRecaptchaSiteKey.isEmpty) {
+      debugPrint(
+          'App Check (web) skipped: RECAPTCHA_V3_SITE_KEY not provided.');
+      return;
+    }
+    await FirebaseAppCheck.instance.activate(
+      webProvider: ReCaptchaV3Provider(_kRecaptchaSiteKey),
+    );
+    return;
+  }
+  await FirebaseAppCheck.instance.activate(
+    androidProvider:
+        kReleaseMode ? AndroidProvider.playIntegrity : AndroidProvider.debug,
+    appleProvider:
+        kReleaseMode ? AppleProvider.appAttest : AppleProvider.debug,
+  );
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await FirebaseAppCheck.instance.activate(
-      webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
-      androidProvider: AndroidProvider.debug);
+  await _activateAppCheck();
   await GetStorage.init();
   MainUser.instance.onInit();
-  // await CatchStorage.clear();  // Remove this line,
   runApp(MyApp());
 }
 

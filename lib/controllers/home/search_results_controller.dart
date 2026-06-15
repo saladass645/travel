@@ -20,7 +20,7 @@ class SearchResultsController extends GetxController {
     isLoading = true;
     update();
 
-    var querySnapshot = await FirestoreServic.instance.getTours();
+    var querySnapshot = await FirestoreService.instance.getTours();
 
     String? convertCityToLowerCase = city!.toLowerCase();
 
