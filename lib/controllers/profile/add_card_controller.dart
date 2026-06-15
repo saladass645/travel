@@ -1,17 +1,17 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:travel_app/models/card_model.dart';
-import 'package:travel_app/network/firestore_service.dart';
+import 'package:travel_app/network/database_service.dart';
 
 class AddCardController extends GetxController {
   String cardNumber = "";
   String holderName = "";
   String CVC = "";
   bool isDefaultCard = false;
-  DateRangePickerController dateRangePickerController = DateRangePickerController();
+  DateRangePickerController dateRangePickerController =
+      DateRangePickerController();
 
   bool isLaoding = false;
 
@@ -63,27 +63,25 @@ class AddCardController extends GetxController {
     update();
 
     try {
-      CardModel _model = CardModel(
+      final model = CardModel(
         CardNumber: int.parse(cardNumber),
         CardHolerName: holderName,
         CVC: CVC,
         isDefaultCard: isDefaultCard,
-        expirationDate: Timestamp.fromDate(expirationDate),
+        expirationDate: expirationDate,
       );
 
-      await FirestoreService.instance.addNewCard(_model);
+      await DatabaseService.instance.addNewCard(model);
 
       Get.back();
-
       isLaoding = false;
       update();
-    } on FirebaseException catch (error) {
+    } catch (error) {
       isLaoding = false;
       update();
-
       Get.snackbar(
         "Something is wrong".tr,
-        error.message!,
+        error.toString(),
         backgroundColor: Colors.red,
       );
     }

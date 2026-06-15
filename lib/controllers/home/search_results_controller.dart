@@ -1,15 +1,10 @@
 import 'package:get/get.dart';
 import 'package:travel_app/models/tour_model.dart';
-import 'package:travel_app/network/firestore_service.dart';
+import 'package:travel_app/network/database_service.dart';
 
 class SearchResultsController extends GetxController {
   bool isLoading = false;
-
   List<TourModel> results = [];
-
-  onInit() async {
-    super.onInit();
-  }
 
   Future<void> searching({
     String? city,
@@ -20,17 +15,15 @@ class SearchResultsController extends GetxController {
     isLoading = true;
     update();
 
-    var querySnapshot = await FirestoreService.instance.getTours();
+    final rows = await DatabaseService.instance.getTours();
+    final query = city?.toLowerCase() ?? '';
 
-    String? convertCityToLowerCase = city!.toLowerCase();
-
-    querySnapshot.docs.forEach((element) {
-      String convertElementTextToLower =
-          element.data()["title"].toString().toLowerCase();
-      if (convertElementTextToLower.contains(convertCityToLowerCase)) {
-        results.add(TourModel.fromJson(element.data()));
+    for (final row in rows) {
+      final title = (row['title'] as String? ?? '').toLowerCase();
+      if (title.contains(query)) {
+        results.add(TourModel.fromJson(row));
       }
-    });
+    }
 
     isLoading = false;
     update();

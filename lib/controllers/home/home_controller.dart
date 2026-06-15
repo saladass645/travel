@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:travel_app/models/category_model.dart';
 import 'package:travel_app/models/tour_model.dart';
-import 'package:travel_app/network/firestore_service.dart';
+import 'package:travel_app/network/database_service.dart';
 
 class HomeController extends GetxController {
   bool isLoading = false;
@@ -9,9 +9,9 @@ class HomeController extends GetxController {
   List<CategoryModel> popularCategory = [];
   int currentIndex = 0;
   List<TourModel> tours = [];
-  String currentContinent = "all";
 
-  onInit() async {
+  @override
+  void onInit() async {
     super.onInit();
     isLoading = true;
     update();
@@ -25,24 +25,13 @@ class HomeController extends GetxController {
   }
 
   Future<void> getContinents() async {
-    continents = [];
-    final value = await FirestoreService.instance.getContinents();
-    final List<dynamic> newValue = value.data()?['names'] ?? const [];
-    for (final n in newValue.cast<String>()) {
-      continents.add(n);
-    }
+    continents = await DatabaseService.instance.getContinentNames();
     update();
   }
 
   Future<void> getPopularCategory() async {
-    popularCategory = [];
-    var documents = await FirestoreService.instance.getPopularCategories();
-
-    if (documents.data() == null) return;
-
-    documents.data()!.forEach((key, value) {
-      popularCategory.add(CategoryModel.fromJson(value));
-    });
+    final rows = await DatabaseService.instance.getPopularCategories();
+    popularCategory = rows.map((row) => CategoryModel.fromJson(row)).toList();
   }
 
   void onChangeContinents(int newIndex) {
@@ -53,12 +42,16 @@ class HomeController extends GetxController {
 
   Future<void> getTours(int currentIndex) async {
     tours = [];
+    if (continents.isEmpty) {
+      update();
+      return;
+    }
     final selected = continents[currentIndex].toLowerCase();
     final showAll = selected == 'all';
-    final querySnapshot = await FirestoreService.instance.getTours();
+    final rows = await DatabaseService.instance.getTours();
 
-    for (final element in querySnapshot.docs) {
-      final tour = TourModel.fromJson(element.data());
+    for (final row in rows) {
+      final tour = TourModel.fromJson(row);
       if (showAll || (tour.continent?.toLowerCase() ?? '') == selected) {
         tours.add(tour);
       }

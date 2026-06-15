@@ -1,6 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:travel_app/network/auth_service.dart';
 
 class RestPasswordController extends GetxController {
@@ -19,10 +19,10 @@ class RestPasswordController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
         margin: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
       );
-    } on FirebaseAuthException catch (error) {
+    } on AuthException catch (error) {
       Get.snackbar(
         "Something is wrong!".tr,
-        error.message!,
+        error.message,
         backgroundColor: Colors.red,
         snackPosition: SnackPosition.BOTTOM,
         margin: EdgeInsets.symmetric(vertical: 15, horizontal: 15),

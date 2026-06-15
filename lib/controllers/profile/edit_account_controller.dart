@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,8 +9,8 @@ import 'package:travel_app/helpers/catch_storage.dart';
 import 'package:travel_app/helpers/constants.dart';
 import 'package:travel_app/helpers/main_user.dart';
 import 'package:travel_app/models/user_model.dart';
+import 'package:travel_app/network/database_service.dart';
 import 'package:travel_app/network/firestorage_service.dart';
-import 'package:travel_app/network/firestore_service.dart';
 
 class EditAccountController extends GetxController {
   UserModel model = MainUser.instance.model!;
@@ -38,18 +37,17 @@ class EditAccountController extends GetxController {
   }
 
   Future<void> pickImage(ImageSource source) async {
-    var _picker = await ImagePicker().pickImage(source: source);
-    if (_picker != null) {
-      imagePath = _picker.path;
-      image = File(_picker.path);
+    final picked = await ImagePicker().pickImage(source: source);
+    if (picked != null) {
+      imagePath = picked.path;
+      image = File(picked.path);
     }
     update();
   }
 
   Future<String?> uploadImage() async {
     if (image == null) return null;
-    String url = await FireStorageService.instance.uploadImage(image!);
-    return url;
+    return await FireStorageService.instance.uploadImage(image!);
   }
 
   Future<void> onSubmit() async {
@@ -62,7 +60,7 @@ class EditAccountController extends GetxController {
       String? imageUrl;
       if (image != null) imageUrl = await uploadImage();
 
-      UserModel _model = UserModel(
+      final updated = UserModel(
         uId: model.uId,
         email: model.email,
         address: address.text,
@@ -72,26 +70,23 @@ class EditAccountController extends GetxController {
         image: imageUrl ?? model.image,
       );
 
-      await FirestoreService.instance.updateUser(_model);
-
-      await CatchStorage.save(k_userKey, jsonEncode(_model.toMap));
-
+      await DatabaseService.instance.updateUser(updated);
+      await CatchStorage.save(k_userKey, jsonEncode(updated.toMap));
       MainUser.instance.update();
 
       Get.back();
-
       Get.find<ProfileController>().update();
 
       isLoading = false;
       update();
-    } on FirebaseException catch (error) {
-      Get.snackbar(
-        "Something_wrong".tr,
-        error.message!,
-        backgroundColor: Colors.red,
-      );
+    } catch (error) {
       isLoading = false;
       update();
+      Get.snackbar(
+        "Something_wrong".tr,
+        error.toString(),
+        backgroundColor: Colors.red,
+      );
     }
   }
 }

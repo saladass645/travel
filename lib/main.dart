@@ -1,44 +1,28 @@
-import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide Binding;
 import 'package:travel_app/helpers/binding.dart';
+import 'package:travel_app/helpers/catch_storage.dart';
 import 'package:travel_app/helpers/constants.dart';
 import 'package:travel_app/helpers/main_user.dart';
 import 'package:travel_app/multi_language/langeuages/translations.dart';
-import 'package:travel_app/helpers/catch_storage.dart';
 import 'package:travel_app/views/splash/splash_screen.dart';
 
-const String _kRecaptchaSiteKey =
-    String.fromEnvironment('RECAPTCHA_V3_SITE_KEY');
-
-Future<void> _activateAppCheck() async {
-  if (kIsWeb) {
-    if (_kRecaptchaSiteKey.isEmpty) {
-      debugPrint(
-          'App Check (web) skipped: RECAPTCHA_V3_SITE_KEY not provided.');
-      return;
-    }
-    await FirebaseAppCheck.instance.activate(
-      webProvider: ReCaptchaV3Provider(_kRecaptchaSiteKey),
-    );
-    return;
-  }
-  await FirebaseAppCheck.instance.activate(
-    androidProvider:
-        kReleaseMode ? AndroidProvider.playIntegrity : AndroidProvider.debug,
-    appleProvider:
-        kReleaseMode ? AppleProvider.appAttest : AppleProvider.debug,
-  );
-}
+const String _kSupabaseUrl = String.fromEnvironment('SUPABASE_URL');
+const String _kSupabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  await _activateAppCheck();
+  if (_kSupabaseUrl.isEmpty || _kSupabaseAnonKey.isEmpty) {
+    throw StateError(
+        'SUPABASE_URL and SUPABASE_ANON_KEY must be provided via --dart-define.');
+  }
+  await Supabase.initialize(
+    url: _kSupabaseUrl,
+    anonKey: _kSupabaseAnonKey,
+  );
   await GetStorage.init();
   MainUser.instance.onInit();
   runApp(MyApp());
@@ -76,7 +60,6 @@ class MyApp extends StatelessWidget {
         primarySwatch: k_primaryColor,
         fontFamily: _getFont(),
       ),
-      // locale: Locale("ar"),
       locale: Locale(_getLanguage()),
       fallbackLocale: Locale("en"),
       translations: Translation(),
