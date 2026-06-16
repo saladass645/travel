@@ -1,73 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:travel_app/components/custom_button.dart';
 import 'package:travel_app/components/custom_field.dart';
-import 'package:travel_app/components/custom_text.dart';
 import 'package:travel_app/controllers/auth/rest_password_controller.dart';
+import 'package:travel_app/helpers/constants.dart';
 import 'package:travel_app/helpers/enum_helper.dart';
 import 'package:travel_app/helpers/validator_helper.dart';
+import 'package:travel_app/views/auth/widgets/auth_layout.dart';
 
 class RestPasswordScreen extends GetWidget<RestPasswordController> {
   const RestPasswordScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            onPressed: () => Get.back(),
-            icon: Icon(Icons.arrow_back_ios_new),
-          ),
+    final hScale = authVScale(context);
+    double v(double base) => base * hScale;
+
+    return AuthScaffold(
+      showBack: true,
+      children: [
+        const AuthHeroBadge(icon: Icons.lock_reset_rounded),
+        SizedBox(height: v(32)),
+        AuthTitle(
+          title: "forget_password".tr,
+          subtitle: "forget_password_message".tr,
         ),
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-          child: SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            child: Form(
-              key: controller.formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 40),
-                  CustomText(
-                    text: "forget_password".tr,
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  SizedBox(height: 8),
-                  CustomText(
-                    text: "forget_password_message".tr,
-                    textAlign: TextAlign.start,
-                    fontSize: 17,
-                  ),
-                  SizedBox(height: 30),
-                  CustomField(
-                    hint: "enter_email".tr,
-                    controller: controller.email,
-                    validator: (value) {
-                      return ValidatorHelper.instance.validator(
-                        value: value,
-                        type: FieldType.email,
-                      );
-                    },
-                    hintText: '',
-                    readOnly: false,
-                  ),
-                  SizedBox(height: 30),
-                  CustomButton(
-                    width: Get.width,
-                    text: "send".tr,
-                    onPressed: () async {
-                      await controller.sendPasswordResetEmail();
-                    },
-                  ),
-                ],
+        SizedBox(height: v(32)),
+        Form(
+          key: controller.formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AuthFieldLabel("enter_email".tr),
+              SizedBox(height: v(8)),
+              CustomField(
+                hint: "enter_email".tr,
+                controller: controller.email,
+                fillColor: k_fieldGray,
+                keyboardType: TextInputType.emailAddress,
+                prefixIcon: Icon(
+                  Icons.mail_outline_rounded,
+                  color: k_primaryColor,
+                  size: 22,
+                ),
+                validator: (value) {
+                  return ValidatorHelper.instance.validator(
+                    value: value,
+                    type: FieldType.email,
+                  );
+                },
+                hintText: '',
+                readOnly: false,
               ),
-            ),
+            ],
           ),
         ),
-      ),
+        SizedBox(height: v(28)),
+        AuthPrimaryButton(
+          label: "send".tr,
+          onPressed: () async => await controller.sendPasswordResetEmail(),
+        ),
+        SizedBox(height: v(12)),
+      ],
     );
   }
 }

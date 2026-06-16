@@ -5,6 +5,8 @@ class ValidatorHelper {
   ValidatorHelper._();
   static final instance = ValidatorHelper._();
 
+  static final _emailRegex = RegExp(r'^[\w.+\-]+@([\w\-]+\.)+[\w\-]{2,}$');
+
   String? validator({required String? value, required FieldType type, String? matchText}) {
     switch (type) {
       case FieldType.name:
@@ -42,6 +44,9 @@ class ValidatorHelper {
     }
     if (value.length < 6) {
       return "short_email".tr;
+    }
+    if (!_emailRegex.hasMatch(value.trim())) {
+      return "invalid_email".tr;
     }
     return null;
   }

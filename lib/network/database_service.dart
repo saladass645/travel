@@ -56,8 +56,10 @@ class DatabaseService {
     await _client.from('users').upsert(_userToRow(model));
   }
 
-  Future<Map<String, dynamic>> getUser(String uId) async {
-    final row = await _client.from('users').select().eq('id', uId).single();
+  Future<Map<String, dynamic>?> getUser(String uId) async {
+    final row =
+        await _client.from('users').select().eq('id', uId).maybeSingle();
+    if (row == null) return null;
     return _rowToUserJson(row);
   }
 

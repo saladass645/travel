@@ -25,6 +25,7 @@ Map<String, String> en = {
   "short_name": "The name is short",
   "empty_email": "Please insert a email",
   "short_email": "The email is short",
+  "invalid_email": "Please enter a valid email",
   "empty_password": "Please insert a password",
   "short_password": "The password is short",
   "not_match_password": "The password doesn't match",

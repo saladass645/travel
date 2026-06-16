@@ -26,6 +26,7 @@ Map<String, String> ar = {
   "short_name": "الاسم قصير",
   "empty_email": "الرجاء ادخال بريدك الالكتروني",
   "short_email": "البريد الالكتروني قصير",
+  "invalid_email": "الرجاء إدخال بريد إلكتروني صالح",
   "empty_password": "الرجاء ادخال كلمة السر",
   "short_password": "كلمة السر قصيرة",
   "not_match_password": "كلمة المرور غير متطابقة",
