@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:travel_app/data/continents.dart';
 import 'package:travel_app/models/category_model.dart';
 import 'package:travel_app/models/tour_model.dart';
 import 'package:travel_app/network/database_service.dart';
@@ -42,17 +43,17 @@ class HomeController extends GetxController {
 
   Future<void> getTours(int currentIndex) async {
     tours = [];
-    if (continents.isEmpty) {
+    if (continents.isEmpty || currentIndex >= kContinents.length) {
       update();
       return;
     }
-    final selected = continents[currentIndex].toLowerCase();
-    final showAll = selected == 'all';
+    final selectedEn =
+        kContinents[currentIndex].displayNames['en']!.toLowerCase();
     final rows = await DatabaseService.instance.getTours();
 
     for (final row in rows) {
       final tour = TourModel.fromJson(row);
-      if (showAll || (tour.continent?.toLowerCase() ?? '') == selected) {
+      if ((tour.continent?.toLowerCase() ?? '') == selectedEn) {
         tours.add(tour);
       }
     }

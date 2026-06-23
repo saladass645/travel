@@ -108,10 +108,14 @@ class TourDetailsScreen extends GetWidget<TourDetailsController> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  CustomText(
-                                    text: model.title!,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 28,
+                                  Expanded(
+                                    child: CustomText(
+                                      text: model.title!,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 28,
+                                      textAlign: TextAlign.start,
+                                      maxLines: 2,
+                                    ),
                                   ),
                                   // CustomText(
                                   //   text: "\$${model.startedPrice}",
@@ -313,8 +317,10 @@ class _BuildInfoItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             BuildImage(
               image: imagePath,
@@ -323,17 +329,23 @@ class _BuildInfoItem extends StatelessWidget {
               isNetworkImage: false,
             ),
             SizedBox(width: 5),
-            CustomText(
-              text: title,
-              fontWeight: FontWeight.bold,
+            Flexible(
+              child: CustomText(
+                text: title,
+                fontWeight: FontWeight.bold,
+                maxLines: 1,
+              ),
             ),
           ],
         ),
         SizedBox(height: 5),
-        CustomText(
-          text: subTitle,
-          color: k_fontGray,
-          fontSize: 15,
+        Flexible(
+          child: CustomText(
+            text: subTitle,
+            color: k_fontGray,
+            fontSize: 15,
+            maxLines: 1,
+          ),
         ),
       ],
     );

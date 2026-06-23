@@ -66,10 +66,11 @@ class LoginController extends GetxController {
       Get.closeAllSnackbars();
       Get.snackbar(
         "Something is wrong!".tr,
-        "Please try again another time".tr,
+        error.toString(),
         backgroundColor: Colors.red,
         snackPosition: SnackPosition.BOTTOM,
         margin: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+        duration: const Duration(seconds: 8),
       );
     }
   }

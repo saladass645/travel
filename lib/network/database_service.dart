@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:travel_app/data/continents.dart';
 import 'package:travel_app/helpers/catch_storage.dart';
 import 'package:travel_app/helpers/constants.dart';
 import 'package:travel_app/models/card_model.dart';
@@ -7,6 +8,7 @@ import 'package:travel_app/models/trip_details.dart';
 import 'package:travel_app/models/trip_list.dart';
 import 'package:travel_app/models/trip_model.dart';
 import 'package:travel_app/models/user_model.dart';
+import 'package:travel_app/network/places_service.dart';
 
 class DatabaseService {
   DatabaseService._();
@@ -205,53 +207,27 @@ class DatabaseService {
   }
 
   // ---------------------------------------------------------------- catalog
+  //
+  // Catalog data is no longer stored in Supabase. Continents and categories
+  // are hard-coded in [kContinents]/[kCategories]; tours come from
+  // [PlacesService] (OpenTripMap). The public method signatures stay the
+  // same so existing controllers do not need to change.
 
-  /// Continent names for the current language, in sort order.
   Future<List<String>> getContinentNames() async {
-    final rows = await _client
-        .from('continents')
-        .select('name, sort_order')
-        .eq('lang', _lang)
-        .order('sort_order', ascending: true);
-    return rows.map<String>((r) => r['name'] as String).toList();
+    return kContinents.map((c) => c.displayName(_lang)).toList();
   }
 
-  /// Popular categories for the current language.
   Future<List<Map<String, dynamic>>> getPopularCategories() async {
-    final rows = await _client
-        .from('categories')
-        .select('name, image, sort_order')
-        .eq('lang', _lang)
-        .order('sort_order', ascending: true);
-    return rows.map((r) => Map<String, dynamic>.from(r)).toList();
+    return kCategories
+        .map((c) => <String, dynamic>{
+              'name': c.displayName(_lang),
+              'image': c.imageUrl,
+            })
+        .toList();
   }
 
-  /// Tours for the current language. Maps Postgres snake_case to the
-  /// JSON keys [TourModel.fromJson] expects.
   Future<List<Map<String, dynamic>>> getTours() async {
-    final rows = await _client.from('tours').select().eq('lang', _lang);
-    return rows.map<Map<String, dynamic>>((m) {
-      return {
-        'id': m['id'],
-        'title': m['title'],
-        'continent': m['continent'],
-        'image': m['image'],
-        'images': (m['images'] as List?)?.cast<String>() ?? const <String>[],
-        'overview': m['overview'],
-        'distance': m['distance'],
-        'weather_condition': m['weather_condition'],
-        'rating': m['rating'],
-        'number_of_reviews': m['number_of_reviews'],
-        'started_price': m['started_price'],
-        'temperature': m['temperature'],
-        'duration_day': m['duration_day'],
-        'category': m['category'],
-        'extra_price': m['extra_price'],
-        'details': m['details'],
-        'reviews': m['reviews'],
-        'costs': m['costs'],
-      };
-    }).toList();
+    return PlacesService.instance.fetchAllTours();
   }
 
   // ---------------------------------------------------------------- cards

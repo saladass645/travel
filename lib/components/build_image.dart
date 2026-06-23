@@ -19,18 +19,25 @@ class BuildImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final radius = borderRadius ?? 15;
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(borderRadius!),
+        borderRadius: BorderRadius.circular(radius),
       ),
       child: FadeInImage(
-        fit: fit != null ? fit : BoxFit.cover,
-        placeholder: AssetImage("assets/images/placeholder.jpg"),
-        image: isNetworkImage ? NetworkImage(image) : AssetImage(image) as ImageProvider,
-        imageErrorBuilder: (BuildContext, Object, StackTrace) =>
-            Image.asset("assets/images/placeholder.jpg"),
+        fit: fit ?? BoxFit.cover,
+        placeholder: const AssetImage("assets/images/placeholder.jpg"),
+        image: isNetworkImage
+            ? NetworkImage(image)
+            : AssetImage(image) as ImageProvider,
+        imageErrorBuilder: (_, __, ___) => Image.asset(
+          "assets/images/placeholder.jpg",
+          width: width,
+          height: height,
+          fit: fit ?? BoxFit.cover,
+        ),
       ),
     );
   }
