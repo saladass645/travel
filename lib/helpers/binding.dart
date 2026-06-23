@@ -13,11 +13,13 @@ import 'package:travel_app/controllers/profile/currency_converter_controller.dar
 import 'package:travel_app/controllers/profile/edit_account_controller.dart';
 import 'package:travel_app/controllers/profile/profile_controller.dart';
 import 'package:travel_app/controllers/splash_controller.dart';
+import 'package:travel_app/controllers/theme_controller.dart';
 import 'package:travel_app/controllers/trip/trip_controller.dart';
 
 class Binding extends Bindings {
   @override
   void dependencies() {
+    Get.put(ThemeController(), permanent: true);
     Get.lazyPut(() => SplashController(), fenix: true);
     Get.lazyPut(() => RegisterController(), fenix: true);
     Get.lazyPut(() => LoginController(), fenix: true);

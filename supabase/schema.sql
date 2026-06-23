@@ -17,9 +17,19 @@ create table if not exists public.users (
   address          text,
   phone_number     bigint,
   date_of_register text,
+  interests        text[] default '{}',
+  travel_style     text,
+  preferred_budget text,
+  onboarding_done  bool default false,
   created_at       timestamptz default now(),
   updated_at       timestamptz default now()
 );
+
+-- Older deployments may pre-date the personalization columns; backfill if missing.
+alter table public.users add column if not exists interests        text[] default '{}';
+alter table public.users add column if not exists travel_style     text;
+alter table public.users add column if not exists preferred_budget text;
+alter table public.users add column if not exists onboarding_done  bool default false;
 
 create table if not exists public.plans (
   id               uuid primary key default gen_random_uuid(),
@@ -58,6 +68,67 @@ create table if not exists public.cards (
   created_at       timestamptz default now()
 );
 create index if not exists cards_user_id_idx on public.cards(user_id);
+
+create table if not exists public.saved_places (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null references public.users(id) on delete cascade,
+  tour_key   text not null,
+  tour_data  jsonb not null,
+  created_at timestamptz default now(),
+  unique(user_id, tour_key)
+);
+create index if not exists saved_places_user_id_idx on public.saved_places(user_id);
+
+create table if not exists public.trip_collection (
+  id         uuid primary key default gen_random_uuid(),
+  plan_id    uuid not null references public.plans(id) on delete cascade,
+  tour_key   text not null,
+  tour_data  jsonb not null,
+  created_at timestamptz default now(),
+  unique(plan_id, tour_key)
+);
+create index if not exists trip_collection_plan_id_idx on public.trip_collection(plan_id);
+
+create table if not exists public.trip_day_plan (
+  id         uuid primary key default gen_random_uuid(),
+  plan_id    uuid not null references public.plans(id) on delete cascade,
+  day        int not null,
+  time       text not null,
+  title      text not null,
+  location   text,
+  note       text,
+  created_at timestamptz default now()
+);
+create index if not exists trip_day_plan_plan_id_idx on public.trip_day_plan(plan_id);
+
+create table if not exists public.trip_expenses (
+  id         uuid primary key default gen_random_uuid(),
+  plan_id    uuid not null references public.plans(id) on delete cascade,
+  label      text not null,
+  amount     numeric not null,
+  category   text not null,
+  spent_at   timestamptz default now(),
+  created_at timestamptz default now()
+);
+create index if not exists trip_expenses_plan_id_idx on public.trip_expenses(plan_id);
+
+create table if not exists public.trip_memories (
+  id         uuid primary key default gen_random_uuid(),
+  plan_id    uuid not null references public.plans(id) on delete cascade,
+  image_url  text not null,
+  caption    text,
+  created_at timestamptz default now()
+);
+create index if not exists trip_memories_plan_id_idx on public.trip_memories(plan_id);
+
+create table if not exists public.trip_invites (
+  id         uuid primary key default gen_random_uuid(),
+  plan_id    uuid not null references public.plans(id) on delete cascade,
+  email      text not null,
+  invited_at timestamptz default now(),
+  unique(plan_id, email)
+);
+create index if not exists trip_invites_plan_id_idx on public.trip_invites(plan_id);
 
 create table if not exists public.continents (
   id         uuid primary key default gen_random_uuid(),
@@ -110,6 +181,12 @@ alter table public.cards                enable row level security;
 alter table public.continents           enable row level security;
 alter table public.categories           enable row level security;
 alter table public.tours                enable row level security;
+alter table public.saved_places         enable row level security;
+alter table public.trip_collection      enable row level security;
+alter table public.trip_day_plan        enable row level security;
+alter table public.trip_expenses        enable row level security;
+alter table public.trip_memories        enable row level security;
+alter table public.trip_invites         enable row level security;
 
 -- users
 drop policy if exists "users_select_own"  on public.users;
@@ -159,6 +236,46 @@ create policy "cards_insert_own" on public.cards for insert with check (auth.uid
 create policy "cards_update_own" on public.cards for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "cards_delete_own" on public.cards for delete using (auth.uid() = user_id);
 
+-- saved_places (per user)
+drop policy if exists "saved_places_select_own" on public.saved_places;
+drop policy if exists "saved_places_insert_own" on public.saved_places;
+drop policy if exists "saved_places_delete_own" on public.saved_places;
+create policy "saved_places_select_own" on public.saved_places for select using (auth.uid() = user_id);
+create policy "saved_places_insert_own" on public.saved_places for insert with check (auth.uid() = user_id);
+create policy "saved_places_delete_own" on public.saved_places for delete using (auth.uid() = user_id);
+
+-- trip-scoped tables (gated through plan ownership)
+do $$
+declare
+  t text;
+begin
+  foreach t in array array[
+    'trip_collection',
+    'trip_day_plan',
+    'trip_expenses',
+    'trip_memories',
+    'trip_invites'
+  ] loop
+    execute format('drop policy if exists "%1$s_select_own" on public.%1$s;', t);
+    execute format('drop policy if exists "%1$s_insert_own" on public.%1$s;', t);
+    execute format('drop policy if exists "%1$s_update_own" on public.%1$s;', t);
+    execute format('drop policy if exists "%1$s_delete_own" on public.%1$s;', t);
+
+    execute format(
+      'create policy "%1$s_select_own" on public.%1$s for select using (exists (select 1 from public.plans p where p.id = plan_id and p.user_id = auth.uid()));',
+      t);
+    execute format(
+      'create policy "%1$s_insert_own" on public.%1$s for insert with check (exists (select 1 from public.plans p where p.id = plan_id and p.user_id = auth.uid()));',
+      t);
+    execute format(
+      'create policy "%1$s_update_own" on public.%1$s for update using (exists (select 1 from public.plans p where p.id = plan_id and p.user_id = auth.uid())) with check (exists (select 1 from public.plans p where p.id = plan_id and p.user_id = auth.uid()));',
+      t);
+    execute format(
+      'create policy "%1$s_delete_own" on public.%1$s for delete using (exists (select 1 from public.plans p where p.id = plan_id and p.user_id = auth.uid()));',
+      t);
+  end loop;
+end$$;
+
 -- catalog (read-only for any authenticated user)
 drop policy if exists "continents_read" on public.continents;
 drop policy if exists "categories_read" on public.categories;
@@ -196,6 +313,36 @@ create trigger on_auth_user_created
 insert into storage.buckets (id, name, public)
 values ('avatars', 'avatars', true)
 on conflict (id) do nothing;
+
+insert into storage.buckets (id, name, public)
+values ('memories', 'memories', true)
+on conflict (id) do nothing;
+
+drop policy if exists "memories_public_read"   on storage.objects;
+drop policy if exists "memories_owner_insert"  on storage.objects;
+drop policy if exists "memories_owner_update"  on storage.objects;
+drop policy if exists "memories_owner_delete"  on storage.objects;
+
+create policy "memories_public_read" on storage.objects
+  for select using (bucket_id = 'memories');
+
+create policy "memories_owner_insert" on storage.objects
+  for insert with check (
+    bucket_id = 'memories'
+    and auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+create policy "memories_owner_update" on storage.objects
+  for update using (
+    bucket_id = 'memories'
+    and auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+create policy "memories_owner_delete" on storage.objects
+  for delete using (
+    bucket_id = 'memories'
+    and auth.uid()::text = (storage.foldername(name))[1]
+  );
 
 drop policy if exists "avatars_public_read"    on storage.objects;
 drop policy if exists "avatars_owner_insert"   on storage.objects;

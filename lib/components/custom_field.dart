@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:travel_app/helpers/app_colors.dart';
 import 'package:travel_app/helpers/constants.dart';
 
 class CustomField extends StatelessWidget {
@@ -10,10 +10,9 @@ class CustomField extends StatelessWidget {
     this.controller,
     this.validator,
     this.obscureText = false,
-    this.radius = 15,
+    this.radius = k_radSm,
     this.fillColor,
     this.textDirection,
-    // this.textDirection = TextDirection.ltr,
     this.enabled,
     this.onTap,
     this.prefixIcon,
@@ -50,40 +49,36 @@ class CustomField extends StatelessWidget {
       textDirection: textDirection,
       onChanged: onChanged,
       keyboardType: keyboardType,
+      style: TextStyle(
+        fontSize: 14,
+        color: AppColors.textDark,
+        fontWeight: FontWeight.w500,
+      ),
       decoration: InputDecoration(
         prefixIcon: prefixIcon,
-        suffixIcon: suffixIcon ?? null,
-        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 17),
+        suffixIcon: suffixIcon,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
         hintText: hint,
+        hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 14),
         hintTextDirection: textDirection,
         filled: true,
-        fillColor: fillColor ?? Colors.white.withOpacity(0.9),
+        fillColor: fillColor ?? AppColors.field,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
-          borderSide: BorderSide(
-            color: Colors.white,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radius),
-          borderSide: BorderSide(
-            color: Colors.red,
-            width: 1.5,
-          ),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
-          borderSide: BorderSide(
-            color: k_primaryColor,
-            width: 1.5,
-          ),
+          borderSide: const BorderSide(color: k_primary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: const BorderSide(color: k_error, width: 1.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
-          borderSide: BorderSide(
-            color: Colors.red,
-            width: 1.5,
-          ),
+          borderSide: const BorderSide(color: k_error, width: 1.5),
         ),
       ),
     );

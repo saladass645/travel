@@ -10,7 +10,7 @@ import 'package:travel_app/helpers/main_user.dart';
 import 'package:travel_app/models/user_model.dart';
 import 'package:travel_app/network/auth_service.dart';
 import 'package:travel_app/network/database_service.dart';
-import 'package:travel_app/views/layout/layout_screen.dart';
+import 'package:travel_app/views/auth/user_info_screen.dart';
 
 class RegisterController extends GetxController {
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -44,7 +44,7 @@ class RegisterController extends GetxController {
       await CatchStorage.save(k_userKey, jsonEncode(_model.toMap));
       MainUser.instance.update();
 
-      await Get.off(() => LayoutScreen());
+      await Get.off(() => const UserInfoScreen());
 
       isLoading = false;
       update();

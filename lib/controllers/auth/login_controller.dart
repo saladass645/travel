@@ -10,6 +10,7 @@ import 'package:travel_app/helpers/main_user.dart';
 import 'package:travel_app/models/user_model.dart';
 import 'package:travel_app/network/auth_service.dart';
 import 'package:travel_app/network/database_service.dart';
+import 'package:travel_app/views/auth/user_info_screen.dart';
 import 'package:travel_app/views/layout/layout_screen.dart';
 
 class LoginController extends GetxController {
@@ -45,7 +46,12 @@ class LoginController extends GetxController {
       await CatchStorage.save(k_userKey, jsonEncode(userData));
       MainUser.instance.update();
 
-      await Get.off(() => LayoutScreen());
+      final onboarded = await DatabaseService.instance.isOnboardingDone();
+      if (onboarded) {
+        await Get.off(() => const LayoutScreen());
+      } else {
+        await Get.off(() => const UserInfoScreen());
+      }
 
       isLoading = false;
       update();

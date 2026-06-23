@@ -167,11 +167,22 @@ class PlacesService {
     final point = detail['point'] as Map?;
 
     final xid = (detail['xid'] as String?) ?? city.name;
-    // Start with a guaranteed-working picsum URL keyed by xid so the card
-    // always renders something. [_ensureImageReady] upgrades to an Unsplash
-    // photo of the actual landmark when an API key is configured.
-    final image =
+
+    // Try OpenTripMap's bundled Wikipedia photo first. Detail responses include
+    // `preview: { source, height, width }` and sometimes a top-level `image`,
+    // both CDN-hosted Wikimedia URLs. If neither is present we fall back to a
+    // picsum placeholder; _ensureImageReady upgrades that to a real photo via
+    // Wikipedia's REST API or Foursquare when available.
+    final previewSource =
+        _httpsify((detail['preview'] as Map?)?['source'] as String?);
+    final detailImage = _httpsify(detail['image'] as String?);
+    final fallback =
         'https://picsum.photos/seed/${Uri.encodeQueryComponent(xid)}/600/400';
+    final image = (previewSource != null && previewSource.isNotEmpty)
+        ? previewSource
+        : (detailImage != null && detailImage.isNotEmpty
+            ? detailImage
+            : fallback);
 
     final overview = (wikiExtracts?['text'] as String?) ??
         (info?['descr'] as String?) ??
@@ -206,7 +217,16 @@ class PlacesService {
       '_lat': (point?['lat'] as num?)?.toDouble(),
       '_lon': (point?['lon'] as num?)?.toDouble(),
       '_city': city.name,
+      '_wiki': detail['wikipedia'] as String?,
+      '_hasRealImage':
+          (previewSource?.isNotEmpty == true) || (detailImage?.isNotEmpty == true),
     };
+  }
+
+  String? _httpsify(String? url) {
+    if (url == null || url.isEmpty) return url;
+    if (url.startsWith('http://')) return 'https://' + url.substring(7);
+    return url;
   }
 
   String _humanize(String s) {
@@ -215,12 +235,27 @@ class PlacesService {
     return cleaned[0].toUpperCase() + cleaned.substring(1);
   }
 
-  /// Looks up a real photo of the POI on Foursquare using its coordinates
-  /// and name. On success the tour's `image` is upgraded from the picsum
-  /// placeholder to a genuine venue photo; on failure (no key, no match,
-  /// no photo, network error) the picsum placeholder stays in place.
+  /// Upgrades the tour's placeholder image to a real photo when possible.
+  ///
+  /// Order:
+  ///   1. If OpenTripMap already supplied a real image, do nothing.
+  ///   2. Try Wikipedia's REST API thumbnail (no key, public, reliable).
+  ///   3. Try Foursquare venue lookup (when a key is configured).
+  ///
+  /// On every failure path the picsum placeholder stays in place so the card
+  /// always shows something.
   Future<void> _ensureImageReady(
       Map<String, dynamic> tour, FeaturedCity city) async {
+    if (tour['_hasRealImage'] == true) return;
+
+    final wiki = await _wikipediaThumbnail(tour);
+    if (wiki != null && wiki.isNotEmpty) {
+      tour['image'] = wiki;
+      tour['images'] = <String>[wiki];
+      tour['_hasRealImage'] = true;
+      return;
+    }
+
     if (!FoursquareService.instance.hasKey) return;
     final lat = tour['_lat'] as double?;
     final lon = tour['_lon'] as double?;
@@ -234,5 +269,47 @@ class PlacesService {
     if (url == null || url.isEmpty) return;
     tour['image'] = url;
     tour['images'] = <String>[url];
+    tour['_hasRealImage'] = true;
+  }
+
+  /// Fetches the Wikipedia REST summary's thumbnail for the tour. Uses the
+  /// `wikipedia` URL when OpenTripMap returned one (most reliable, since it
+  /// maps to an article that's actually about *this* place); otherwise falls
+  /// back to a title-based summary lookup keyed on the place name.
+  Future<String?> _wikipediaThumbnail(Map<String, dynamic> tour) async {
+    String? title;
+    final wikiUrl = tour['_wiki'] as String?;
+    if (wikiUrl != null && wikiUrl.isNotEmpty) {
+      final match = RegExp(r'/wiki/([^?#]+)').firstMatch(wikiUrl);
+      if (match != null) {
+        title = Uri.decodeComponent(match.group(1)!);
+      }
+    }
+    title ??= tour['title'] as String?;
+    if (title == null || title.isEmpty) return null;
+
+    try {
+      final response = await Dio(BaseOptions(
+        connectTimeout: const Duration(seconds: 8),
+        receiveTimeout: const Duration(seconds: 8),
+      )).get(
+        'https://en.wikipedia.org/api/rest_v1/page/summary/'
+        '${Uri.encodeComponent(title)}',
+        options: Options(
+          headers: const {'accept': 'application/json'},
+          // Wikipedia returns a 404 page for missing titles. Don't throw.
+          validateStatus: (s) => s != null && s < 500,
+        ),
+      );
+      if (response.statusCode != 200) return null;
+      final data = (response.data as Map).cast<String, dynamic>();
+      final thumb = (data['thumbnail'] as Map?)?['source'] as String?;
+      final original =
+          (data['originalimage'] as Map?)?['source'] as String?;
+      return _httpsify(original ?? thumb);
+    } catch (e) {
+      debugPrint('[Wikipedia] thumbnail failed for "$title": $e');
+      return null;
+    }
   }
 }

@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Response;
 import 'package:travel_app/models/currency_model.dart';
 
 const String _kExchangeRateApiKey =
@@ -17,6 +17,7 @@ class CurrencyConverterController extends GetxController {
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
+  @override
   onInit() async {
     super.onInit();
     await getCurrency();
@@ -27,20 +28,34 @@ class CurrencyConverterController extends GetxController {
     hasError = false;
     update();
     try {
-      if (_kExchangeRateApiKey.isEmpty) {
-        throw StateError(
-            'EXCHANGERATE_API_KEY not provided. Pass it via --dart-define.');
-      }
-      final url =
-          'https://v6.exchangerate-api.com/v6/$_kExchangeRateApiKey/latest/USD';
-      final response = await Dio(BaseOptions(
+      final dio = Dio(BaseOptions(
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
-      )).get(url);
+      ));
 
-      if (response.statusCode != 200) throw 'Error with response';
+      Response<dynamic> response;
+      Map<String, dynamic> parsed;
 
-      currencyModel = CurrencyModel.fromJson(response.data);
+      if (_kExchangeRateApiKey.isNotEmpty) {
+        response = await dio.get(
+          'https://v6.exchangerate-api.com/v6/$_kExchangeRateApiKey/latest/USD',
+        );
+        if (response.statusCode != 200) throw 'rate request failed';
+        parsed = (response.data as Map).cast<String, dynamic>();
+      } else {
+        // No key? Fall back to the open ExchangeRate-API mirror (no key
+        // required, same JSON shape except `rates` instead of
+        // `conversion_rates`). Lets the converter work out of the box.
+        response = await dio.get('https://open.er-api.com/v6/latest/USD');
+        if (response.statusCode != 200) throw 'rate request failed';
+        final raw = (response.data as Map).cast<String, dynamic>();
+        parsed = {
+          ...raw,
+          'conversion_rates': raw['rates'] ?? raw['conversion_rates'],
+        };
+      }
+
+      currencyModel = CurrencyModel.fromJson(parsed);
       isLoading = false;
       update();
     } catch (error) {
