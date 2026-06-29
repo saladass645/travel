@@ -8,8 +8,28 @@ class HomeController extends GetxController {
   bool isLoading = false;
   List<String> continents = [];
   List<CategoryModel> popularCategory = [];
-  int currentIndex = 0;
-  List<TourModel> tours = [];
+
+  /// Filter index. -1 means "All continents", 0..N maps into [kContinents].
+  int currentIndex = -1;
+
+  /// All tours fetched across every continent. Filter on read via
+  /// [tours] / [filteredTours].
+  List<TourModel> _allTours = [];
+
+  /// Backwards-compat: existing UI reads `controller.tours` directly.
+  /// Returns the filtered subset based on [currentIndex].
+  List<TourModel> get tours => filteredTours;
+
+  List<TourModel> get filteredTours {
+    if (currentIndex < 0 || currentIndex >= kContinents.length) {
+      return _allTours;
+    }
+    final selectedEn =
+        kContinents[currentIndex].displayNames['en']!.toLowerCase();
+    return _allTours
+        .where((t) => (t.continent?.toLowerCase() ?? '') == selectedEn)
+        .toList();
+  }
 
   @override
   void onInit() async {
@@ -19,7 +39,7 @@ class HomeController extends GetxController {
 
     await getContinents();
     await getPopularCategory();
-    await getTours(currentIndex);
+    await _loadAllTours();
 
     isLoading = false;
     update();
@@ -32,32 +52,18 @@ class HomeController extends GetxController {
 
   Future<void> getPopularCategory() async {
     final rows = await DatabaseService.instance.getPopularCategories();
-    popularCategory = rows.map((row) => CategoryModel.fromJson(row)).toList();
+    popularCategory =
+        rows.map((row) => CategoryModel.fromJson(row)).toList();
+  }
+
+  Future<void> _loadAllTours() async {
+    final rows = await DatabaseService.instance.getTours();
+    _allTours = rows.map((row) => TourModel.fromJson(row)).toList();
+    update();
   }
 
   void onChangeContinents(int newIndex) {
     currentIndex = newIndex;
-    getTours(currentIndex);
-    update();
-  }
-
-  Future<void> getTours(int currentIndex) async {
-    tours = [];
-    if (continents.isEmpty || currentIndex >= kContinents.length) {
-      update();
-      return;
-    }
-    final selectedEn =
-        kContinents[currentIndex].displayNames['en']!.toLowerCase();
-    final rows = await DatabaseService.instance.getTours();
-
-    for (final row in rows) {
-      final tour = TourModel.fromJson(row);
-      if ((tour.continent?.toLowerCase() ?? '') == selectedEn) {
-        tours.add(tour);
-      }
-    }
-
     update();
   }
 }

@@ -6,11 +6,12 @@ import 'package:travel_app/components/glass_chip.dart';
 import 'package:travel_app/components/section_header.dart';
 import 'package:travel_app/controllers/home/home_controller.dart';
 import 'package:travel_app/controllers/trip/trip_controller.dart';
+import 'package:travel_app/data/continents.dart';
 import 'package:travel_app/helpers/app_colors.dart';
 import 'package:travel_app/helpers/constants.dart';
 import 'package:travel_app/helpers/main_user.dart';
 import 'package:travel_app/models/tour_model.dart';
-import 'package:travel_app/views/home/search_option_screen.dart';
+import 'package:travel_app/views/discovery/explore_nearby_screen.dart';
 import 'package:travel_app/views/home/tour_details_screen.dart';
 
 class DiscoveryScreen extends StatefulWidget {
@@ -44,8 +45,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
           physics: const BouncingScrollPhysics(),
           slivers: [
             const SliverToBoxAdapter(child: _HeroHeader()),
-            SliverToBoxAdapter(child: _SearchPill()),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            const SliverToBoxAdapter(child: SizedBox(height: 18)),
+            SliverToBoxAdapter(
+              child: _RegionChips(
+                active: controller.currentIndex,
+                onTap: controller.onChangeContinents,
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 14)),
             SliverToBoxAdapter(
               child: _DiscoveryTabs(
                 tabs: _tabs,
@@ -80,7 +87,7 @@ class _HeroHeader extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.fromLTRB(
-          k_pad, MediaQuery.of(context).padding.top + 18, k_pad, 28),
+          k_pad, MediaQuery.of(context).padding.top + 18, k_pad, 24),
       decoration: const BoxDecoration(
         gradient: k_gradHero,
         borderRadius: BorderRadius.only(
@@ -93,9 +100,18 @@ class _HeroHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              const GlassChip(
-                label: 'EXPLORE',
-                icon: Icons.public_rounded,
+              Material(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(100),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(100),
+                  onTap: () =>
+                      Get.to(() => const ExploreNearbyScreen()),
+                  child: const GlassChip(
+                    label: 'EXPLORE GLOBALLY',
+                    icon: Icons.public_rounded,
+                  ),
+                ),
               ),
               const Spacer(),
               CircleIconButton(
@@ -122,6 +138,8 @@ class _HeroHeader extends StatelessWidget {
             textAlign: TextAlign.start,
             maxLines: 3,
           ),
+          const SizedBox(height: 22),
+          const _SearchPill(),
         ],
       ),
     );
@@ -131,56 +149,149 @@ class _HeroHeader extends StatelessWidget {
 // =================================================================== search
 
 class _SearchPill extends StatelessWidget {
+  const _SearchPill();
+
   @override
   Widget build(BuildContext context) {
-    return Transform.translate(
-      offset: const Offset(0, -28),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: k_pad),
-        child: GestureDetector(
-          onTap: () => Get.to(() => SearchOptionScreen()),
-          child: Container(
-            height: 60,
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8).copyWith(left: 18),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(100),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.18),
-                  blurRadius: 22,
-                  offset: const Offset(0, 12),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(100),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(100),
+        onTap: () => Get.to(() => const ExploreNearbyScreen()),
+        child: Container(
+          height: 60,
+          padding: const EdgeInsets.fromLTRB(20, 6, 6, 6),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(100),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.20),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.search_rounded,
+                  color: AppColors.textMuted, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: CustomText(
+                  text: 'Where to?',
+                  fontSize: 14,
+                  color: AppColors.textMuted,
+                  textAlign: TextAlign.start,
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.search_rounded,
-                    color: AppColors.textMuted, size: 22),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: CustomText(
-                    text: 'Where to?',
-                    fontSize: 14,
-                    color: AppColors.textMuted,
-                    textAlign: TextAlign.start,
-                  ),
+              ),
+              Container(
+                width: 48,
+                height: 48,
+                decoration: const BoxDecoration(
+                  gradient: k_gradAccent,
+                  shape: BoxShape.circle,
                 ),
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: const BoxDecoration(
-                    gradient: k_gradAccent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.tune_rounded,
-                      color: Colors.white, size: 20),
-                ),
-              ],
-            ),
+                child: const Icon(Icons.tune_rounded,
+                    color: Colors.white, size: 20),
+              ),
+            ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// =================================================================== regions
+
+class _RegionChips extends StatelessWidget {
+  const _RegionChips({required this.active, required this.onTap});
+  final int active;
+  final ValueChanged<int> onTap;
+
+  static const _allLabel = 'All';
+
+  IconData _iconFor(String key) {
+    switch (key) {
+      case 'asia':
+        return Icons.temple_buddhist_rounded;
+      case 'europe':
+        return Icons.castle_rounded;
+      case 'americas':
+        return Icons.location_city_rounded;
+      case 'africa':
+        return Icons.savings_rounded;
+      case 'oceania':
+        return Icons.surfing_rounded;
+      default:
+        return Icons.public_rounded;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 44,
+      child: ListView.separated(
+        physics: const BouncingScrollPhysics(),
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: k_pad),
+        // +1 for the "All" chip at index -1
+        itemCount: kContinents.length + 1,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final isAll = index == 0;
+          final continent = isAll ? null : kContinents[index - 1];
+          final selected = isAll ? active < 0 : active == index - 1;
+          final label =
+              isAll ? _allLabel : continent!.displayNames['en']!;
+          final icon =
+              isAll ? Icons.public_rounded : _iconFor(continent!.key);
+
+          return Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(100),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(100),
+              onTap: () => onTap(isAll ? -1 : index - 1),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 0),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: selected ? k_primary : AppColors.surface,
+                  borderRadius: BorderRadius.circular(100),
+                  border: Border.all(
+                    color: selected ? k_primary : AppColors.border,
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(icon,
+                        size: 15,
+                        color: selected
+                            ? Colors.white
+                            : AppColors.textBody),
+                    const SizedBox(width: 6),
+                    CustomText(
+                      text: label,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: selected
+                          ? Colors.white
+                          : AppColors.textBody,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

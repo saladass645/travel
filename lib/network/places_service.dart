@@ -62,6 +62,67 @@ class PlacesService {
     return rows;
   }
 
+  /// Returns ~[limit] notable POIs within [radiusMeters] of the given point.
+  ///
+  /// On-demand variant of [fetchTours] that any UI can call (no continent
+  /// classification, no caching). Used by the global-explore screen so users
+  /// can search literally any city worldwide and see places near it.
+  Future<List<Map<String, dynamic>>> fetchNearbyPlaces({
+    required double lat,
+    required double lon,
+    required String cityLabel,
+    String? continentLabel,
+    int radiusMeters = 15000,
+    int limit = 12,
+  }) async {
+    if (!hasApiKey) return const [];
+
+    final synthetic = FeaturedCity(name: cityLabel, lat: lat, lon: lon);
+    final continent = ContinentInfo(
+      key: 'on-demand',
+      displayNames: {
+        'en': continentLabel ?? cityLabel,
+        'ar': continentLabel ?? cityLabel,
+      },
+      restCountriesRegion: 'on-demand',
+      featuredCities: const [],
+    );
+
+    try {
+      final response = await _throttledGet(
+        '/places/radius',
+        queryParameters: {
+          'radius': radiusMeters,
+          'lon': lon,
+          'lat': lat,
+          'kinds':
+              'interesting_places,architecture,cultural,historic,museums,natural',
+          'rate': '2h',
+          'limit': limit,
+          'format': 'json',
+          'apikey': _kApiKey,
+        },
+      );
+      final list = (response.data as List).cast<Map<String, dynamic>>();
+      final tours = <Map<String, dynamic>>[];
+      for (final item in list) {
+        final xid = item['xid'] as String?;
+        if (xid == null || xid.isEmpty) continue;
+        try {
+          final detail = await _placeDetail(xid);
+          tours.add(_toTourRow(detail, synthetic, continent));
+        } catch (e) {
+          debugPrint('[PlacesService] detail failed for $xid: $e');
+        }
+      }
+      await Future.wait(tours.map((t) => _ensureImageReady(t, synthetic)));
+      return tours;
+    } catch (e) {
+      debugPrint('[PlacesService] nearby failed for $cityLabel: $e');
+      return const [];
+    }
+  }
+
   Future<List<Map<String, dynamic>>> _toursNearCity(
       FeaturedCity city, ContinentInfo continent) async {
     try {

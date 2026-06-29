@@ -7,6 +7,7 @@ import 'package:travel_app/controllers/trip/trip_controller.dart';
 import 'package:travel_app/helpers/app_colors.dart';
 import 'package:travel_app/helpers/constants.dart';
 import 'package:travel_app/models/trip_model.dart';
+import 'package:travel_app/views/trips/edit_trip_sheet.dart';
 import 'package:travel_app/views/trips/invite_screen.dart';
 import 'package:travel_app/views/trips/manage_trip_screen.dart';
 
@@ -50,7 +51,15 @@ class _InformationTripScreenState extends State<InformationTripScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const OverlineText('AT A GLANCE'),
+                      Row(
+                        children: [
+                          const Expanded(child: OverlineText('AT A GLANCE')),
+                          _EditDetailsChip(
+                            onTap: () => EditTripDetailsSheet.show(
+                                context, trip),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 12),
                       _SummaryGrid(trip: trip, people: people),
                       const SizedBox(height: 28),
@@ -59,7 +68,7 @@ class _InformationTripScreenState extends State<InformationTripScreen> {
                       BodyText(
                         trip.details?.extraNotes?.isNotEmpty == true
                             ? trip.details!.extraNotes!
-                            : 'No notes added yet. Open the planner to add details, day plans, expenses, and memories.',
+                            : 'No notes added yet. Tap "Edit" above to add transport, stay, budget, and notes.',
                         maxLines: 10,
                       ),
                       const SizedBox(height: 32),
@@ -101,6 +110,44 @@ class _InformationTripScreenState extends State<InformationTripScreen> {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _EditDetailsChip extends StatelessWidget {
+  const _EditDetailsChip({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(100),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(100),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(
+            color: AppColors.primarySoft,
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.edit_rounded, color: k_primary, size: 14),
+              const SizedBox(width: 6),
+              CustomText(
+                text: 'Edit',
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: k_primary,
+                letterSpacing: 0.4,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
